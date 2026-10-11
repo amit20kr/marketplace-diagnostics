@@ -1,0 +1,4 @@
+pct_worst,n_eligible_sellers,n_fixed_sellers,median_dispatch,late_orders_avoided,share_of_all_late,est_1star_avoided
+0.05,611,31,2.561,359,0.055,169
+0.1,611,61,2.561,542,0.083,256
+0.2,611,122,2.561,764,0.117,360

@@ -1,0 +1,2 @@
+orders_in_window,delivered_valid_orders,late_orders,late_rate,late_rate_timestamp_level,orders_reviewed,avg_review,one_star_share,avg_dispatch_days,avg_transit_days,dispatch_compliance,single_seller_orders,multi_seller_orders,gmv_items,aov,freight_to_item_value
+99092,96203,6531,0.067888,0.081307,95560,4.1563,0.097457,3.204,9.3444,0.942989,94931,1272,13179777.95,136.9997,0.166313

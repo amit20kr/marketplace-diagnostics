@@ -1,0 +1,12 @@
+ord,stage,value
+1,all_leads,8000.0
+2,closed_deals,842.0
+3,deal_sellers_in_sellers_table,380.0
+4,deal_sellers_in_order_items,380.0
+5,deal_sellers_with_delivered_order,376.0
+6,deals_matured_90d,667.0
+7,matured_deals_first_sale_within_90d,288.0
+8,delivered_orders_from_deal_sellers,4455.0
+9,item_gmv_deal_sellers,664580.0
+10,delivered_orders_all,96470.0
+11,NAIVE_join_rows_leads_x_deals_x_items,12664.0

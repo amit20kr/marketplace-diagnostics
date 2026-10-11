@@ -1,0 +1,180 @@
+{
+  "kpi": {
+    "delivered_valid_orders": 96203,
+    "late_orders": 6531,
+    "late_rate": 0.0679,
+    "late_rate_ci_lo": 0.0663,
+    "late_rate_ci_hi": 0.0695,
+    "avg_review": 4.1563,
+    "one_star_share": 0.0975,
+    "avg_dispatch_days": 3.204,
+    "avg_transit_days": 9.3444,
+    "dispatch_compliance": 0.943,
+    "gmv_items": 13179777.95,
+    "aov": 136.9997,
+    "freight_to_item_value": 0.1663,
+    "single_seller_orders": 94931,
+    "multi_seller_orders": 1272
+  },
+  "funnel": {
+    "leads": 8000,
+    "deals": 842,
+    "lead_to_deal_rate": 0.1052,
+    "lead_to_deal_ci_lo": 0.0987,
+    "lead_to_deal_ci_hi": 0.1122,
+    "chi2_origin": {
+      "chi2": 128.32895736153466,
+      "p_value": 6.2793161363990935e-24,
+      "dof": 8,
+      "cramers_v": 0.1276547712282535
+    }
+  },
+  "reviews": {
+    "n_late_reviewed": 6378,
+    "n_ontime_reviewed": 89182,
+    "avg_review_late": 2.2706,
+    "avg_review_ontime": 4.2912,
+    "one_star_late": 0.5376,
+    "one_star_ontime": 0.066,
+    "one_star_late_ci": [
+      0.5257,
+      0.5495
+    ],
+    "one_star_ontime_ci": [
+      0.0643,
+      0.0676
+    ],
+    "one_star_gap": 0.4717,
+    "one_star_gap_ci": [
+      0.4597,
+      0.4835
+    ],
+    "mann_whitney": {
+      "u_stat": 102901001.5,
+      "p_value": 0.0,
+      "r_biserial": 0.6382,
+      "n_a": 6378,
+      "n_b": 89182
+    },
+    "crude_or": 16.4609,
+    "mh_or": 16.4151,
+    "mh_n_strata": 3,
+    "post_delivery_n_late": 1629,
+    "post_delivery_n_ontime": 88961,
+    "post_delivery_1star_late": 0.1872,
+    "post_delivery_1star_ontime": 0.0658
+  },
+  "delivery": {
+    "bad_months": [
+      "2017-11",
+      "2018-02",
+      "2018-03"
+    ],
+    "baseline_late_rate": 0.0448,
+    "bad_months_late_rate": 0.1515,
+    "shift_share_change": 0.1067,
+    "shift_share_mix_effect": -0.0001,
+    "shift_share_rate_effect": 0.1068,
+    "avg_dispatch_late": 6.0387,
+    "avg_dispatch_ontime": 2.9972,
+    "avg_transit_late": 27.8989,
+    "avg_transit_ontime": 7.9909,
+    "extra_dispatch_days": 3.0415,
+    "extra_transit_days": 19.908,
+    "pct_extra_dispatch": 0.1325,
+    "pct_extra_transit": 0.8675,
+    "dispatch_missed_n": 5412,
+    "dispatch_met_n": 89517,
+    "dispatch_missed_late_rate": 0.269,
+    "dispatch_met_late_rate": 0.0565,
+    "dispatch_missed_risk_ratio": 4.7585,
+    "dispatch_missed_pct_of_late": 0.2229
+  },
+  "cohorts": {
+    "monthly_retention_jan_may_2018": [
+      {
+        "k": 1,
+        "grp": "acquired",
+        "active": 120,
+        "total": 195,
+        "retention": 0.6154,
+        "ci_lo": 0.5455,
+        "ci_hi": 0.6808
+      },
+      {
+        "k": 1,
+        "grp": "non_funnel",
+        "active": 302,
+        "total": 528,
+        "retention": 0.572,
+        "ci_lo": 0.5294,
+        "ci_hi": 0.6135
+      },
+      {
+        "k": 2,
+        "grp": "acquired",
+        "active": 128,
+        "total": 195,
+        "retention": 0.6564,
+        "ci_lo": 0.5873,
+        "ci_hi": 0.7195
+      },
+      {
+        "k": 2,
+        "grp": "non_funnel",
+        "active": 258,
+        "total": 528,
+        "retention": 0.4886,
+        "ci_lo": 0.4462,
+        "ci_hi": 0.5312
+      },
+      {
+        "k": 3,
+        "grp": "acquired",
+        "active": 125,
+        "total": 195,
+        "retention": 0.641,
+        "ci_lo": 0.5716,
+        "ci_hi": 0.705
+      },
+      {
+        "k": 3,
+        "grp": "non_funnel",
+        "active": 260,
+        "total": 528,
+        "retention": 0.4924,
+        "ci_lo": 0.45,
+        "ci_hi": 0.535
+      }
+    ]
+  },
+  "simulator": [
+    {
+      "pct_worst": 0.05,
+      "n_eligible_sellers": 611,
+      "n_fixed_sellers": 31,
+      "median_dispatch": 2.561,
+      "late_orders_avoided": 359,
+      "share_of_all_late": 0.055,
+      "est_1star_avoided": 169
+    },
+    {
+      "pct_worst": 0.1,
+      "n_eligible_sellers": 611,
+      "n_fixed_sellers": 61,
+      "median_dispatch": 2.561,
+      "late_orders_avoided": 542,
+      "share_of_all_late": 0.083,
+      "est_1star_avoided": 256
+    },
+    {
+      "pct_worst": 0.2,
+      "n_eligible_sellers": 611,
+      "n_fixed_sellers": 122,
+      "median_dispatch": 2.561,
+      "late_orders_avoided": 764,
+      "share_of_all_late": 0.117,
+      "est_1star_avoided": 360
+    }
+  ]
+}

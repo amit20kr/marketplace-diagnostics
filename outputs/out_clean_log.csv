@@ -1,0 +1,7 @@
+item,value
+reviews_raw_rows,99224
+reviews_clean_rows,98673
+reviews_dropped_by_dedup,551
+shipping_limit_outliers_ge_2019,4
+delivered_without_delivery_date,8
+orders_without_items,775

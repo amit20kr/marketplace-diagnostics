@@ -1,0 +1,13 @@
+data/raw/
+*.sqlite
+*.sqlite-journal
+db/
+outputs/audit/
+.env
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+.venv/
+venv/
+.pytest_cache/
+.DS_Store
