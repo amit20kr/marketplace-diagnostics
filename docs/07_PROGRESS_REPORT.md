@@ -114,12 +114,12 @@ Simplest: `git add -A` then `git commit`. Check first that `git status` does not
 
 | Phase | Scope | State | Done |
 |---|---|---|---|
-| A | Audit, data model, KPIs | Built; headline KPIs reproduced (WP0). Tests v2 green on the real machine (38 passed, 12 on real data). Committed (4292cbf). Data-model docs pending (WP1). | ~97% |
-| B | Funnel, cohorts, RCA, reviews, simulator | SQL layer verified. Statistics layer APPROVED (WP0b/WP0c, 2026-10-15). Robustness (WP1) and findings (WP2) pending. | ~85% |
-| C | Streamlit app | Spec and empty folders only. App-ready data files are produced by the pipeline. | ~5% |
-| D | Tests, README, deploy, resume bullets | Pipeline test suite v2 done (D-030). README, app tests, deploy, resume bullets pending. | ~15% |
+| A | Audit, data model, KPIs | Built; headline KPIs reproduced (WP0). Tests v2 green on the real machine (38 passed, 12 on real data). Committed (4292cbf). Data-model docs done (WP1). | 100% |
+| B | Funnel, cohorts, RCA, reviews, simulator | SQL layer verified. Statistics layer APPROVED (WP0b/WP0c, 2026-10-15). Robustness (WP1) and findings (WP2) DONE. | 100% |
+| C | Streamlit app | 5-page app (Home + pages 1–5) APPROVED (WP3, 2026-10-16). Screenshots in `screenshots/`. Commit 83e99a8. | 100% |
+| D | Tests, README, deploy, resume bullets | 53 tests (38 pipeline + 7 robustness + 5 smoke + 3 numbers), 19 on real data (D-029). README done. App APPROVED. Pending: GitHub push + Streamlit Cloud deploy. | ~90% |
 
-**Overall: about 43% (2026-10-15, WP0b approved)**; the previous figure was about 39%: (effort weights A 15%, B 25%, C 40%, D 20%; was 34% before WP0b and the test repair; WP0b counts at full value only once Claude has approved it). The judgment-heavy part, deciding what the data really supports, is mostly done. The remaining ~61% is mostly build and polish that Antigravity does well.
+**Overall: about 95% (2026-10-16, WP3 approved)**; phases A–C at 100%, D at ~90% (pending GitHub push and Streamlit Cloud deploy). Resume bullets provided by Claude.
 
 **Rough remaining effort (my estimate):** 6-9 hours of Antigravity agent time, about 6-7 sessions (WP0b is done). Your own time: about 40 minutes in total (paste 6-7 reports back to me, one GitHub + Streamlit Cloud login). The zip step is gone.
 
