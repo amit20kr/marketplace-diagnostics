@@ -1,0 +1,12 @@
+table,rows,cols,full_duplicate_rows
+customers,99441,5,0
+geolocation,1000163,5,261831
+orders,99441,8,0
+order_items,112650,7,0
+payments,103886,5,0
+reviews,99224,7,0
+products,32951,9,0
+sellers,3095,4,0
+category_translation,71,2,0
+leads,8000,4,0
+closed_deals,842,14,0

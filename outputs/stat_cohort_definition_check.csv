@@ -1,0 +1,13 @@
+definition,grp,k,active,total,retention_rate
+old_single_seller_only,acquired,1,120,195,0.6154
+old_single_seller_only,acquired,2,128,195,0.6564
+old_single_seller_only,acquired,3,125,195,0.641
+old_single_seller_only,non_funnel,1,302,528,0.572
+old_single_seller_only,non_funnel,2,258,528,0.4886
+old_single_seller_only,non_funnel,3,260,528,0.4924
+new_all_delivered_items_d025,acquired,1,123,197,0.6244
+new_all_delivered_items_d025,non_funnel,1,306,533,0.5741
+new_all_delivered_items_d025,acquired,2,132,197,0.6701
+new_all_delivered_items_d025,non_funnel,2,262,533,0.4916
+new_all_delivered_items_d025,acquired,3,126,197,0.6396
+new_all_delivered_items_d025,non_funnel,3,264,533,0.4953

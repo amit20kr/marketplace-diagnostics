@@ -1,0 +1,12 @@
+origin,matured_deals,first_sale_90_n,downstream_rate,downstream_lo,downstream_hi,small_n
+organic_search,208,81,0.3894,0.3257,0.4571,0
+paid_search,146,80,0.5479,0.467,0.6264,0
+social,55,24,0.4364,0.3137,0.5673,0
+unknown,154,63,0.4091,0.3346,0.488,0
+direct_traffic,49,22,0.449,0.3185,0.5869,0
+email,13,5,0.3846,0.1771,0.6448,1
+referral,18,8,0.4444,0.2456,0.6628,1
+other,4,1,0.25,0.0456,0.6994,1
+display,6,1,0.1667,0.0301,0.5635,1
+other_publicities,3,0,0.0,0.0,0.5615,1
+(missing),11,3,0.2727,0.0975,0.5657,1

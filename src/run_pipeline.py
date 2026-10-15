@@ -77,8 +77,9 @@ def export_tables(conn: sqlite3.Connection, out_dir: Path) -> list[str]:
     import pandas as pd
 
     out_dir.mkdir(parents=True, exist_ok=True)
+    # D-028: do not export out_app_* as raw CSVs (write_app_files handles them as .gz and slim app files)
     cursor = conn.execute(
-        "SELECT name FROM sqlite_master WHERE type='table' AND name LIKE 'out_%' ORDER BY name"
+        "SELECT name FROM sqlite_master WHERE type='table' AND name LIKE 'out_%' AND name NOT LIKE 'out_app_%' ORDER BY name"
     )
     tables = [r[0] for r in cursor]
     exported = []

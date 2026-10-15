@@ -1,308 +1,339 @@
-"""tests/test_pipeline.py – 11 checks for the Olist pipeline.
+"""tests/test_pipeline.py – checks for the Olist pipeline (D-029, revised by D-030).
 
-Tests T01 and T07 are real-data-only (skipif REAL_DATA is False).
-Tests T02-T08 use an in-memory synthetic SQLite DB built by the synth_conn fixture.
-Tests T09-T11 are pure-Python (no DB needed).
+Layers
+  A. Known-answer tests of the SQL on a hand-built mini dataset (tests/synth_db.py). Run on every machine.
+  B. Structural invariants. Run on the synthetic DB always, and on the real DB too when it exists
+     (the `env` fixture is parametrised: [synthetic] and [real]).
+  C. Independent audit: the funnel is recomputed in pandas from the raw tables and compared with SQL.
+  D. Pure-Python checks of src/stats.py and src/simulator.py.
+  E. Real-data-only checks (marked `real`): row counts, simulator on real orders, saved outputs.
 
-Environment variables:
-  OLIST_RAW  – path to raw data folder   (default: data/raw)
-  OLIST_DB   – path to the SQLite file    (default: C:/work/olist.sqlite)
-  OLIST_OUT  – path to outputs folder     (default: outputs)
-
-Run without real data:  pytest -q
-Run with real data:     $env:OLIST_DB="C:\\work\\olist.sqlite"; pytest -q
+Run `pytest` from anywhere inside the project. The header says whether real data was found;
+`-ra` lists every skip with its reason; the footer says how many tests ran on real data.
 """
 from __future__ import annotations
-
-import json
-import os
-import sqlite3
-import sys
-import tempfile
-from datetime import datetime
-from pathlib import Path
 
 import numpy as np
 import pandas as pd
 import pytest
 
-# ─── config ──────────────────────────────────────────────────────────────────
-
-RAW = Path(os.environ.get("OLIST_RAW", "data/raw"))
-DB  = Path(os.environ.get("OLIST_DB",  "C:/work/olist.sqlite"))
-OUT = Path(os.environ.get("OLIST_OUT", "outputs"))
-
-REAL_DATA = DB.exists() and (OUT / "out_kpi_overall.csv").exists()
-
-# ─── Add src/ to sys.path ─────────────────────────────────────────────────────
-_src = Path(__file__).parent.parent / "src"
-if str(_src) not in sys.path:
-    sys.path.insert(0, str(_src))
-
-from stats import wilson_ci, shift_share
+from simulator import run_scenarios
+from stats import (bootstrap_mh_or_ci, chi_square_table, mann_whitney, mantel_haenszel_or,
+                   shift_share, wilson_ci)
 
 
-# ─── real-data fixtures ───────────────────────────────────────────────────────
-
-@pytest.fixture(scope="session")
-def conn():
-    if not DB.exists():
-        pytest.skip(f"Database not found at {DB}; run the pipeline first.")
-    c = sqlite3.connect(str(DB))
-    yield c
-    c.close()
+def q(env, sql: str) -> pd.DataFrame:
+    return pd.read_sql_query(sql, env.conn)
 
 
-# ─── synthetic DB fixture (for T02-T08) ──────────────────────────────────────
-
-@pytest.fixture(scope="session")
-def synth_conn():
-    """Build a tiny SQLite DB from synthetic data and run the full SQL pipeline."""
-    tmp = tempfile.mktemp(suffix=".sqlite")
-    c = sqlite3.connect(tmp)
-    c.execute("PRAGMA journal_mode=WAL")
-
-    c.execute("""CREATE TABLE raw_orders (
-        order_id TEXT, customer_id TEXT, order_status TEXT,
-        order_purchase_timestamp TEXT, order_approved_at TEXT,
-        order_delivered_carrier_date TEXT, order_delivered_customer_date TEXT,
-        order_estimated_delivery_date TEXT)""")
-    c.executemany("INSERT INTO raw_orders VALUES (?,?,?,?,?,?,?,?)", [
-        ("O1","C1","delivered","2017-03-01 10:00:00","2017-03-01 11:00:00",
-         "2017-03-03 08:00:00","2017-03-08 14:00:00","2017-03-10 00:00:00"),
-        ("O2","C2","delivered","2017-04-01 10:00:00","2017-04-01 11:00:00",
-         "2017-04-03 08:00:00","2017-04-15 14:00:00","2017-04-10 00:00:00"),  # LATE
-        ("O3","C3","delivered","2017-05-01 10:00:00","2017-05-01 11:00:00",
-         "2017-05-03 08:00:00","2017-05-07 14:00:00","2017-05-09 00:00:00"),
-        ("O4","C4","shipped","2017-06-01 10:00:00","2017-06-01 11:00:00",
-         None, None, "2017-06-20 00:00:00"),
-    ])
-
-    c.execute("""CREATE TABLE raw_order_items (
-        order_id TEXT, order_item_id TEXT, product_id TEXT, seller_id TEXT,
-        shipping_limit_date TEXT, price TEXT, freight_value TEXT)""")
-    c.executemany("INSERT INTO raw_order_items VALUES (?,?,?,?,?,?,?)", [
-        ("O1","1","P1","S1","2017-03-05 00:00:00","100.0","15.0"),
-        ("O2","1","P2","S2","2017-04-05 00:00:00","200.0","20.0"),
-        ("O3","1","P3","S3","2017-05-05 00:00:00","50.0","8.0"),
-        ("O3","2","P4","S3","2017-05-05 00:00:00","30.0","5.0"),
-        ("O4","1","P1","S1","2017-06-05 00:00:00","80.0","12.0"),
-    ])
-
-    c.execute("""CREATE TABLE raw_reviews (
-        order_id TEXT, review_id TEXT, review_score TEXT,
-        review_creation_date TEXT, review_answer_timestamp TEXT)""")
-    c.executemany("INSERT INTO raw_reviews VALUES (?,?,?,?,?)", [
-        ("O1","R1","5","2017-03-09 00:00:00","2017-03-09 10:00:00"),
-        ("O2","R2","1","2017-04-12 00:00:00","2017-04-12 10:00:00"),
-        ("O3","R3","4","2017-05-08 00:00:00","2017-05-08 10:00:00"),
-    ])
-
-    c.execute("CREATE TABLE raw_customers (customer_id TEXT, customer_unique_id TEXT, customer_state TEXT)")
-    c.executemany("INSERT INTO raw_customers VALUES (?,?,?)", [
-        ("C1","U1","SP"), ("C2","U2","RJ"), ("C3","U3","MG"), ("C4","U4","SP"),
-    ])
-
-    c.execute("CREATE TABLE raw_sellers (seller_id TEXT, seller_city TEXT, seller_state TEXT)")
-    c.executemany("INSERT INTO raw_sellers VALUES (?,?,?)", [
-        ("S1","Sao Paulo","SP"), ("S2","Rio","RJ"), ("S3","BH","MG"),
-    ])
-
-    c.execute("CREATE TABLE raw_products (product_id TEXT, product_category_name TEXT)")
-    c.executemany("INSERT INTO raw_products VALUES (?,?)", [
-        ("P1","eletronicos"), ("P2","livros"), ("P3","brinquedos"), ("P4","brinquedos"),
-    ])
-
-    c.execute("CREATE TABLE raw_category_translation (product_category_name TEXT, product_category_name_english TEXT)")
-    c.executemany("INSERT INTO raw_category_translation VALUES (?,?)", [
-        ("eletronicos","electronics"), ("livros","books"), ("brinquedos","toys"),
-    ])
-
-    c.execute("CREATE TABLE raw_leads (mql_id TEXT, first_contact_date TEXT, landing_page_id TEXT, origin TEXT)")
-    c.executemany("INSERT INTO raw_leads VALUES (?,?,?,?)", [
-        ("L1","2017-07-01","PG1","organic_search"),
-        ("L2","2017-08-01","PG2","paid_search"),
-    ])
-
-    c.execute("""CREATE TABLE raw_closed_deals (
-        mql_id TEXT, seller_id TEXT, sdr_id TEXT, sr_id TEXT, won_date TEXT,
-        business_segment TEXT, lead_type TEXT, lead_behaviour_profile TEXT,
-        business_type TEXT, has_company TEXT, has_gtin TEXT,
-        average_stock TEXT, declared_product_catalog_size TEXT,
-        declared_monthly_revenue TEXT)""")
-    c.executemany("INSERT INTO raw_closed_deals VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)", [
-        ("L1","S1","SDR1","SR1","2017-10-01 00:00:00","online","online_medium",
-         None,"enterprise",None,None,None,None,"5000"),
-    ])
-    c.commit()
-
-    sql_dir = Path(__file__).parent.parent / "sql"
-    for fname in ["01_load_clean.sql","02_star_schema.sql","03_kpis.sql",
-                  "04_funnel.sql","05_cohorts.sql","06_delivery_reviews.sql"]:
-        c.executescript((sql_dir / fname).read_text(encoding="utf-8"))
-        c.commit()
-
-    yield c
-    c.close()
-    try:
-        os.unlink(tmp)
-    except Exception:
-        pass
+def wf(env) -> dict:
+    t = q(env, "SELECT stage, value FROM out_funnel_waterfall")
+    return dict(zip(t["stage"], t["value"]))
 
 
-# ─── T01: row counts (real data only) ────────────────────────────────────────
+# ═════════════════════════════════════════════════════════════════════════════
+# A. Known answers on the mini dataset (synthetic only)
+# ═════════════════════════════════════════════════════════════════════════════
 
-@pytest.mark.skipif(not REAL_DATA, reason="real data not loaded")
-def test_t01_row_counts(conn):
-    """Public row counts must match: orders 99441, items 112650, etc."""
-    for table, expected in [
-        ("raw_orders", 99441), ("raw_order_items", 112650),
-        ("raw_reviews", 99224), ("raw_customers", 99441),
-        ("raw_sellers", 3095),  ("raw_leads", 8000), ("raw_closed_deals", 842),
-    ]:
-        actual = pd.read_sql_query(f"SELECT COUNT(*) AS n FROM {table}", conn).iloc[0]["n"]
-        assert actual == expected, f"{table}: expected {expected}, got {actual}"
-
-
-# ─── T02: unique grain on fact_orders ────────────────────────────────────────
-
-def test_t02_fact_orders_unique_grain(synth_conn):
-    """fact_orders must have exactly one row per order_id."""
-    df = pd.read_sql_query(
-        "SELECT order_id, COUNT(*) AS n FROM fact_orders GROUP BY order_id HAVING n > 1",
-        synth_conn,
-    )
-    assert len(df) == 0, f"{len(df)} duplicate order_ids in fact_orders"
+# order: (in_window, delivered_valid, is_late, late_ts, stage_valid)
+EXPECTED_FLAGS = {
+    "O1": (1, 1, 0, 0, 1), "O2": (1, 1, 1, 1, 1), "O3": (1, 1, 0, 0, 1),
+    "O4": (1, 0, None, None, 0),            # shipped: not delivered
+    "O5": (1, 0, None, None, 0),            # 'delivered' without a delivery date (D-002)
+    "O6": (0, 1, 0, 0, 1),                  # purchased 2016-12: before the window
+    "O7": (0, 1, 0, 0, 1),                  # purchased 2018-09: after the window
+    "O8": (1, 1, 0, 0, 1), "O9": (1, 1, 0, 0, 0),   # O9: carrier hand-off after delivery (D-004)
+    "O10": (1, 1, 0, 1, 1),                 # D-012: on time by DATE, late by TIMESTAMP
+    "O11": (1, 1, 0, 0, 1), "O12": (1, 1, 0, 0, 1), "O13": (1, 1, 0, 0, 1),
+}
 
 
-# ─── T03: no GMV double-counting ─────────────────────────────────────────────
-
-def test_t03_no_gmv_double_count(synth_conn):
-    """GMV in fact_orders must equal sum of item prices in fact_order_items."""
-    item_gmv = pd.read_sql_query(
-        "SELECT order_id, SUM(price) AS item_sum FROM fact_order_items GROUP BY order_id",
-        synth_conn,
-    )
-    order_gmv = pd.read_sql_query(
-        "SELECT order_id, item_value FROM fact_orders WHERE item_value IS NOT NULL",
-        synth_conn,
-    )
-    merged = item_gmv.merge(order_gmv, on="order_id")
-    diff = (merged["item_sum"] - merged["item_value"]).abs()
-    assert (diff < 0.01).all(), f"GMV mismatch in {(diff >= 0.01).sum()} orders"
+def test_a1_order_flags_known_answers(synth_env):
+    fo = q(synth_env, "SELECT order_id, in_window, delivered_valid, is_late, late_ts, stage_valid FROM fact_orders")
+    got = {r.order_id: tuple(None if pd.isna(v) else int(v) for v in r[1:]) for r in fo.itertuples(index=False)}
+    assert got == EXPECTED_FLAGS
 
 
-# ─── T04: late-flag consistency ──────────────────────────────────────────────
-
-def test_t04_late_flag_consistency(synth_conn):
-    """is_late must equal (delay_days > 0) for all delivered-valid orders."""
-    df = pd.read_sql_query(
-        """SELECT order_id, is_late, delay_days FROM fact_orders
-           WHERE delivered_valid = 1 AND delay_days IS NOT NULL""",
-        synth_conn,
-    )
-    expected_late = (df["delay_days"] > 0).astype(int)
-    mismatches = (df["is_late"] != expected_late).sum()
-    assert mismatches == 0, f"{mismatches} late-flag mismatches"
+def test_a2_lateness_values_and_stage_times(synth_env):
+    fo = q(synth_env, "SELECT * FROM fact_orders").set_index("order_id")
+    assert fo.loc["O2", "delay_days"] == 5 and fo.loc["O2", "delay_band"] == "4-7"
+    assert fo.loc["O1", "delay_days"] == -2 and fo.loc["O1", "delay_band"] == "on_time"
+    assert fo.loc["O10", "delay_days"] == 0 and fo.loc["O10", "delay_band"] == "on_time"
+    # O1: purchase 03-01 10:00 -> carrier 03-03 08:00 (1d 22h) -> delivered 03-08 14:00 (5d 6h)
+    assert fo.loc["O1", "dispatch_days"] == pytest.approx(1 + 22 / 24, abs=1e-6)
+    assert fo.loc["O1", "transit_days"] == pytest.approx(5.25, abs=1e-6)
+    assert pd.isna(fo.loc["O9", "dispatch_days"]) and pd.isna(fo.loc["O4", "dispatch_days"])
 
 
-# ─── T05: stage times add up ─────────────────────────────────────────────────
-
-def test_t05_stage_times_add_up(synth_conn):
-    """dispatch_days + transit_days must be within 1 day of total elapsed for stage-valid orders."""
-    df = pd.read_sql_query(
-        """SELECT order_id, dispatch_days, transit_days, purchase_ts, delivered_ts
-           FROM fact_orders
-           WHERE stage_valid = 1 AND dispatch_days IS NOT NULL AND transit_days IS NOT NULL""",
-        synth_conn,
-    )
-
-    def elapsed_days(r):
-        try:
-            ts = datetime.strptime(r["purchase_ts"][:19], "%Y-%m-%d %H:%M:%S")
-            td = datetime.strptime(r["delivered_ts"][:19], "%Y-%m-%d %H:%M:%S")
-            return (td - ts).total_seconds() / 86400
-        except Exception:
-            return np.nan
-
-    df["elapsed"] = df.apply(elapsed_days, axis=1)
-    diff = (df["elapsed"] - (df["dispatch_days"] + df["transit_days"])).abs().dropna()
-    assert (diff < 1.0).all(), f"Stage time mismatch in {(diff >= 1).sum()} orders"
+def test_a3_seller_attribution_and_gmv(synth_env):
+    fo = q(synth_env, "SELECT * FROM fact_orders").set_index("order_id")
+    assert pd.isna(fo.loc["O8", "seller_id"]) and fo.loc["O8", "n_sellers"] == 2     # D-018
+    assert fo.loc["O3", "seller_id"] == "S3" and fo.loc["O3", "n_items"] == 2
+    assert fo.loc["O3", "item_value"] == pytest.approx(80.0)                          # 50 + 30, not doubled
+    assert pd.isna(fo.loc["O11", "item_value"]) and pd.isna(fo.loc["O11", "seller_id"])  # order without items
+    assert fo.loc["O1", "category"] == "electronics" and fo.loc["O3", "category"] == "toys"
 
 
-# ─── T06: funnel waterfall non-increasing ────────────────────────────────────
-
-def test_t06_funnel_waterfall(synth_conn):
-    """Funnel stages (leads -> deals -> sellers) must be non-increasing."""
-    wf = pd.read_sql_query("SELECT stage, value FROM out_funnel_waterfall ORDER BY ord", synth_conn)
-    wf_d = dict(zip(wf["stage"], wf["value"]))
-    assert wf_d["all_leads"] >= wf_d["closed_deals"], "leads < deals"
-    assert wf_d["closed_deals"] >= wf_d["deal_sellers_in_sellers_table"], "deals < sellers_in_table"
-    assert wf_d["deal_sellers_in_sellers_table"] >= wf_d["deal_sellers_with_delivered_order"], "sellers not monotone"
-
-
-# ─── T07: funnel equals pandas audit (real data only) ────────────────────────
-
-@pytest.mark.skipif(not REAL_DATA, reason="real data not loaded")
-def test_t07_funnel_equals_pandas_audit(conn):
-    """SQL funnel waterfall must match audit.py real-data numbers."""
-    wf = pd.read_sql_query("SELECT stage, value FROM out_funnel_waterfall", conn)
-    wf_d = dict(zip(wf["stage"], wf["value"]))
-    assert int(wf_d["all_leads"]) == 8000
-    assert int(wf_d["closed_deals"]) == 842
-    assert int(wf_d["deal_sellers_in_sellers_table"]) == 380
-    assert int(wf_d["deal_sellers_with_delivered_order"]) == 376
+def test_a4_review_dedup_and_timing(synth_env):
+    fo = q(synth_env, "SELECT * FROM fact_orders").set_index("order_id")
+    assert fo.loc["O3", "review_score"] == 2                      # R3b (answered later) beats R3 (D-003)
+    assert fo.loc["O2", "review_score"] == 1 and fo.loc["O2", "review_pre_delivery"] == 1   # written 04-12, delivered 04-15
+    assert fo.loc["O1", "review_pre_delivery"] == 0 and fo.loc["O3", "review_pre_delivery"] == 0
+    assert fo.loc["O12", "review_pre_delivery"] == 1
+    assert pd.isna(fo.loc["O4", "review_score"])
+    log = dict(q(synth_env, "SELECT item, value FROM out_clean_log").values)
+    assert (log["reviews_raw_rows"], log["reviews_clean_rows"], log["reviews_dropped_by_dedup"]) == (7, 6, 1)
+    assert log["delivered_without_delivery_date"] == 1 and log["orders_without_items"] == 1
 
 
-# ─── T08: window rules ───────────────────────────────────────────────────────
+def test_a5_headline_kpis(synth_env):
+    k = q(synth_env, "SELECT * FROM out_kpi_overall").iloc[0]
+    assert (k["orders_in_window"], k["delivered_valid_orders"], k["late_orders"]) == (11, 9, 1)
+    assert k["late_rate"] == pytest.approx(1 / 9, abs=1e-6)
+    assert k["late_rate_timestamp_level"] == pytest.approx(2 / 9, abs=1e-6)       # D-012 sensitivity
+    assert (k["orders_reviewed"], k["single_seller_orders"], k["multi_seller_orders"]) == (6, 7, 1)
+    assert k["one_star_share"] == pytest.approx(1 / 6, abs=1e-6)
+    assert k["gmv_items"] == pytest.approx(895.0)
+    sens = q(synth_env, "SELECT definition, late_orders FROM out_late_sensitivity").set_index("definition")["late_orders"]
+    assert (sens["date_level"], sens["timestamp_level"]) == (1, 2)
 
-def test_t08_window_rules(synth_conn):
-    """No in-window orders outside 2017-01-01 to 2018-08-31."""
-    df = pd.read_sql_query("SELECT purchase_month FROM fact_orders WHERE in_window = 1", synth_conn)
-    assert (df["purchase_month"] >= "2017-01").all(), "in_window order before 2017-01"
-    assert (df["purchase_month"] < "2018-09").all(), "in_window order after 2018-08"
+
+def test_a6_funnel_known_answers(synth_env):
+    w = wf(synth_env)
+    expected = {
+        "all_leads": 4, "closed_deals": 3, "deal_sellers_in_sellers_table": 2, "deal_sellers_in_order_items": 2,
+        "deal_sellers_with_delivered_order": 2, "deals_matured_90d": 3, "matured_deals_first_sale_within_90d": 1,
+        "delivered_orders_from_deal_sellers": 4, "item_gmv_deal_sellers": 440.0, "delivered_orders_all": 11,
+        "NAIVE_join_rows_leads_x_deals_x_items": 7,       # fan-out trap: 4 leads become 7 rows
+    }
+    assert {k: w[k] for k in expected} == pytest.approx(expected)
 
 
-# ─── T09: simulator monotonic ────────────────────────────────────────────────
+# ═════════════════════════════════════════════════════════════════════════════
+# B. Structural invariants (synthetic always; real too when available)
+# ═════════════════════════════════════════════════════════════════════════════
 
-def test_t09_simulator_monotonic():
-    """run_scenarios: more sellers fixed -> more late orders avoided (weakly monotonic)."""
-    from simulator import run_scenarios
+def test_b1_unique_grain(env):
+    assert q(env, "SELECT COUNT(*) - COUNT(DISTINCT order_id) AS d FROM fact_orders").d[0] == 0
+    assert q(env, "SELECT COUNT(*) - COUNT(DISTINCT order_id) AS d FROM fact_reviews").d[0] == 0
+    assert q(env, "SELECT COUNT(*) - COUNT(DISTINCT mql_id) AS d FROM fact_seller_funnel").d[0] == 0
+    assert q(env, "SELECT COUNT(*) - COUNT(DISTINCT order_id || '-' || order_item_id) AS d FROM fact_order_items").d[0] == 0
 
-    rng = np.random.default_rng(0)
-    n = 500
-    seller_ids = rng.choice([f"S{i:03d}" for i in range(50)], size=n)
+
+def test_b2_no_gmv_double_counting(env):
+    total_orders = q(env, "SELECT SUM(item_value) AS v FROM fact_orders").v[0]
+    total_items = q(env, "SELECT SUM(price) AS v FROM fact_order_items").v[0]
+    assert total_orders == pytest.approx(total_items, abs=0.01)
+    per_order = q(env, """SELECT o.order_id, o.item_value, i.s FROM fact_orders o
+                          JOIN (SELECT order_id, SUM(price) AS s FROM fact_order_items GROUP BY order_id) i
+                            ON i.order_id = o.order_id""")
+    assert ((per_order["item_value"] - per_order["s"]).abs() < 0.01).all()
+
+
+def test_b3_late_flag_consistency(env):
+    d = q(env, "SELECT is_late, late_ts, delay_days, delivered_valid FROM fact_orders WHERE delivered_valid = 1")
+    assert (d["is_late"] == (d["delay_days"] > 0).astype(int)).all()
+    assert (d["late_ts"] >= d["is_late"]).all()        # timestamp-level lateness is never milder than date-level
+    assert q(env, "SELECT COUNT(*) AS c FROM fact_orders WHERE delivered_valid = 0 AND is_late IS NOT NULL").c[0] == 0
+
+
+def test_b4_stage_times_add_up(env):
+    d = q(env, "SELECT purchase_ts, delivered_ts, dispatch_days, transit_days FROM fact_orders WHERE stage_valid = 1")
+    elapsed = (pd.to_datetime(d["delivered_ts"], format="ISO8601")
+               - pd.to_datetime(d["purchase_ts"], format="ISO8601")).dt.total_seconds() / 86400
+    assert (elapsed - (d["dispatch_days"] + d["transit_days"])).abs().max() < 1e-3
+    assert (d["dispatch_days"] >= 0).all() and (d["transit_days"] >= 0).all()
+
+
+def test_b5_window_rules(env):
+    fo = q(env, "SELECT purchase_ts, in_window FROM fact_orders")
+    inside = fo["purchase_ts"].between("2017-01-01", "2018-08-31 23:59:59")
+    assert (fo["in_window"] == inside.astype(int)).all()      # flag agrees with the dates, both directions
+
+
+def test_b6_funnel_waterfall_is_a_funnel(env):
+    w = wf(env)
+    assert w["all_leads"] >= w["closed_deals"] >= w["deal_sellers_in_sellers_table"] \
+        >= w["deal_sellers_in_order_items"] >= w["deal_sellers_with_delivered_order"]
+    assert w["deals_matured_90d"] <= w["closed_deals"]
+    assert w["matured_deals_first_sale_within_90d"] <= w["deals_matured_90d"]
+    assert w["delivered_orders_from_deal_sellers"] <= w["delivered_orders_all"]
+    assert w["NAIVE_join_rows_leads_x_deals_x_items"] >= w["all_leads"]       # the fan-out trap exists
+
+
+def test_b7_cohort_table_is_coherent(env):
+    c = q(env, "SELECT cohort_month, grp, k, cohort_size, active_n, observable FROM out_cohort_retention")
+    assert (c["active_n"] <= c["cohort_size"]).all()
+    k0 = c[(c["k"] == 0) & (c["observable"] == 1)]
+    assert (k0["active_n"] == k0["cohort_size"]).all()        # everyone is active in their own first month
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# C. Independent audit: SQL funnel == pandas recomputation from the raw tables
+# ═════════════════════════════════════════════════════════════════════════════
+
+def test_c1_funnel_equals_independent_pandas(env):
+    if not env.frames:
+        pytest.skip("raw CSVs not found (set OLIST_RAW or put them in data/raw)")
+    o, it, sl, ld, cd = (env.frames[k] for k in ("orders", "order_items", "sellers", "leads", "closed_deals"))
+    delivered = o[(o["order_status"] == "delivered") & o["order_delivered_customer_date"].notna()]
+    deal_sellers = set(cd["seller_id"].dropna())
+    items = it[it["order_id"].isin(set(delivered["order_id"])) & it["seller_id"].isin(deal_sellers)]
+    naive = ld.merge(cd[["mql_id", "seller_id"]], on="mql_id", how="left").merge(
+        it[["seller_id"]], on="seller_id", how="left")
+    expected = {
+        "all_leads": ld["mql_id"].nunique(),
+        "closed_deals": cd["mql_id"].nunique(),
+        "deal_sellers_in_sellers_table": len(deal_sellers & set(sl["seller_id"])),
+        "deal_sellers_in_order_items": len(deal_sellers & set(it["seller_id"])),
+        "deal_sellers_with_delivered_order": items["seller_id"].nunique(),
+        "delivered_orders_from_deal_sellers": items["order_id"].nunique(),
+        "item_gmv_deal_sellers": round(pd.to_numeric(items["price"]).sum(), 2),
+        "delivered_orders_all": len(delivered),
+        "NAIVE_join_rows_leads_x_deals_x_items": len(naive),
+    }
+    w = wf(env)
+    assert {k: w[k] for k in expected} == pytest.approx(expected, abs=0.01)
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# D. Pure-Python checks (no database)
+# ═════════════════════════════════════════════════════════════════════════════
+
+def _random_orders(seed=0, n=500, n_sellers=50):
+    rng = np.random.default_rng(seed)
     dispatch = rng.uniform(1, 10, size=n)
     delay = dispatch - np.median(dispatch) + rng.uniform(-2, 2, size=n)
-    df = pd.DataFrame({
+    return pd.DataFrame({
         "order_id": range(n), "in_window": 1, "delivered_valid": 1, "stage_valid": 1,
-        "seller_id": seller_ids, "dispatch_days": dispatch, "delay_days": delay,
-        "is_late": (delay > 0).astype(int),
+        "seller_id": rng.choice([f"S{i:03d}" for i in range(n_sellers)], size=n),
+        "dispatch_days": dispatch, "delay_days": delay, "is_late": (delay > 0).astype(int),
         "review_score": rng.choice([1, 2, 3, 4, 5], size=n),
+        "review_pre_delivery": rng.choice([0, 1], size=n),
     })
-    res = run_scenarios(df, pcts=(0.05, 0.10, 0.20), min_orders=5)
-    avoided = res["late_orders_avoided"].tolist()
-    for i in range(len(avoided) - 1):
-        assert avoided[i] <= avoided[i + 1], f"Not monotonic: {avoided}"
 
 
-# ─── T10: Wilson CI known value ──────────────────────────────────────────────
+@pytest.mark.parametrize("seed", [0, 1, 2, 3, 4])
+def test_d1_simulator_invariants(seed):
+    """Fixing more sellers never avoids fewer late orders; the 1-star range is ordered; 0% fixes nothing."""
+    res = run_scenarios(_random_orders(seed), pcts=(0.0, 0.05, 0.10, 0.20, 0.50), min_orders=5)
+    for col in ("n_fixed_sellers", "late_orders_avoided", "est_1star_low", "est_1star_high"):
+        assert res[col].is_monotonic_increasing, f"{col} not monotone: {res[col].tolist()}"
+    assert (res["est_1star_low"] <= res["est_1star_high"]).all()
+    zero = res[res["pct_worst"] == 0.0].iloc[0]
+    assert zero["n_fixed_sellers"] == 0 and zero["late_orders_avoided"] == 0
 
-def test_t10_wilson_ci():
-    """Wilson CI for 842/8000 should be close to 9.87-11.22%."""
-    lo, hi = wilson_ci(842, 8000)
-    assert abs(lo - 0.0987) < 0.002, f"Wilson CI lo = {lo:.4f}, expected ~0.0987"
-    assert abs(hi - 0.1122) < 0.002, f"Wilson CI hi = {hi:.4f}, expected ~0.1122"
+
+def test_d2_simulator_range_is_ordered_even_when_post_gap_exceeds_crude_gap():
+    """Regression: the low/high ordering must come from the code, not from lucky data (D-024)."""
+    df = _random_orders(seed=0)
+    # post-delivery reviews (pre_delivery == 0) are brutal for late orders, pre-delivery ones are neutral
+    late = df["is_late"] == 1
+    df["review_pre_delivery"] = np.where(late, np.arange(len(df)) % 2, 1)
+    df["review_score"] = np.where(late & (df["review_pre_delivery"] == 0), 1, 5)
+    res = run_scenarios(df, pcts=(0.10, 0.50), min_orders=5)
+    assert res["late_orders_avoided"].max() > 0
+    assert (res["est_1star_low"] <= res["est_1star_high"]).all()
 
 
-# ─── T11: shift-share decomposition exact ────────────────────────────────────
+def test_d3_wilson_ci_known_value():
+    lo, hi = wilson_ci(842, 8000)                  # 842 deals out of 8000 leads
+    assert lo == pytest.approx(0.0987, abs=0.0005) and hi == pytest.approx(0.1122, abs=0.0005)
+    lo, hi = wilson_ci(50, 100)
+    assert lo == pytest.approx(0.4038, abs=0.001) and hi == pytest.approx(0.5962, abs=0.001)
+    assert all(np.isnan(wilson_ci(0, 0)))
 
-def test_t11_shift_share():
-    """mix_effect + rate_effect must sum exactly to the overall change."""
+
+def test_d4_shift_share_is_exact():
     normal = pd.DataFrame({"state": ["A", "B"], "orders": [1000, 500], "late": [40, 30]})
-    bad    = pd.DataFrame({"state": ["A", "B"], "orders": [800,  600], "late": [80, 90]})
+    bad = pd.DataFrame({"state": ["A", "B"], "orders": [800, 600], "late": [80, 90]})
     res = shift_share(normal, bad, "state", "orders", "late")
-    reconstructed = res["mix_effect"] + res["rate_effect"]
-    assert abs(res["change"] - reconstructed) < 1e-8, (
-        f"Mismatch: change={res['change']:.8f} vs mix+rate={reconstructed:.8f}"
-    )
+    assert res["mix_effect"] + res["rate_effect"] == pytest.approx(res["change"], abs=1e-12)
+    # a group that only exists in the bad period must not break the identity
+    bad2 = pd.concat([bad, pd.DataFrame({"state": ["C"], "orders": [100], "late": [20]})], ignore_index=True)
+    res2 = shift_share(normal, bad2, "state", "orders", "late")
+    assert res2["mix_effect"] + res2["rate_effect"] == pytest.approx(res2["change"], abs=1e-12)
+
+
+def test_d5_mantel_haenszel_recovers_a_common_odds_ratio():
+    # two strata that both have odds ratio exactly 2: (a*d)/(b*c) = (20*10)/(10*10) = (40*20)/(20*20)
+    out = mantel_haenszel_or([(20, 10, 10, 10), (40, 20, 20, 20)])
+    assert out["mh_or"] == pytest.approx(2.0) and out["n_strata"] == 2
+    # a stratum with no late (or no on-time) orders carries no information and is skipped
+    out = mantel_haenszel_or([(20, 10, 10, 10), (0, 0, 5, 5), (3, 3, 0, 0)])
+    assert out["mh_or"] == pytest.approx(2.0) and out["n_strata"] == 1
+
+
+def test_d6_bootstrap_mh_ci_brackets_the_estimate():
+    rng = np.random.default_rng(3)
+    n = 6000
+    df = pd.DataFrame({"state": rng.choice(list("ABCD"), n), "late": rng.integers(0, 2, n)})
+    p = np.where(df["late"] == 1, 0.35, 0.12)          # true OR ~ 3.9 in every state
+    df["one_star"] = (rng.random(n) < p).astype(int)
+    pt, lo, hi, k = bootstrap_mh_or_ci(df, ["state"], "late", "one_star", n_boot=300)
+    assert k == 4 and lo < pt < hi and 2.5 < pt < 5.5
+
+
+def test_d7_mann_whitney_sign_convention():
+    """D-027: r = 2U/(n1*n2) - 1 is negative when group a scores lower than group b."""
+    low = np.array([1, 1, 2, 2, 3, 1, 2])
+    high = np.array([4, 5, 5, 4, 5, 3, 5])
+    assert mann_whitney(low, high)["r_biserial"] < -0.8
+    assert mann_whitney(high, low)["r_biserial"] > 0.8
+    assert mann_whitney(low, low)["r_biserial"] == pytest.approx(0.0, abs=1e-9)
+    assert np.isnan(mann_whitney(np.array([]), high)["r_biserial"])
+
+
+def test_d8_chi_square_table():
+    out = chi_square_table(pd.DataFrame([[50, 50], [50, 50]]))
+    assert out["chi2"] == pytest.approx(0.0, abs=1e-9) and out["cramers_v"] == pytest.approx(0.0, abs=1e-9)
+    out = chi_square_table(pd.DataFrame([[90, 10], [10, 90]]))
+    # uncorrected V would be exactly 0.80; scipy applies Yates' correction to 2x2 tables, so slightly below
+    assert out["p_value"] < 1e-10 and 0.78 < out["cramers_v"] < 0.80 and out["dof"] == 1
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# E. Real-data-only checks (skipped, with a stated reason, when the real data are absent)
+# ═════════════════════════════════════════════════════════════════════════════
+
+@pytest.mark.real
+def test_e1_real_row_counts(real_env):
+    expected = {"raw_orders": 99441, "raw_order_items": 112650, "raw_reviews": 99224, "raw_customers": 99441,
+                "raw_sellers": 3095, "raw_leads": 8000, "raw_closed_deals": 842, "clean_reviews": 98673}
+    got = {t: int(q(real_env, f"SELECT COUNT(*) AS n FROM {t}").n[0]) for t in expected}
+    assert got == expected
+
+
+@pytest.mark.real
+def test_e2_simulator_on_real_orders(real_env):
+    orders = q(real_env, """SELECT order_id, seller_id, in_window, delivered_valid, stage_valid, is_late, delay_days,
+                                   dispatch_days, review_score, review_pre_delivery
+                            FROM fact_orders WHERE in_window = 1 AND delivered_valid = 1""")
+    res = run_scenarios(orders, pcts=(0.0, 0.05, 0.10, 0.20), min_orders=30)
+    for col in ("n_fixed_sellers", "late_orders_avoided", "est_1star_low", "est_1star_high"):
+        assert res[col].is_monotonic_increasing, f"{col}: {res[col].tolist()}"
+    assert (res["est_1star_low"] <= res["est_1star_high"]).all()
+    zero = res[res["pct_worst"] == 0.0].iloc[0]
+    assert zero["n_fixed_sellers"] == 0 and zero["late_orders_avoided"] == 0
+
+
+@pytest.mark.real
+def test_e3_adjusted_odds_ratio_is_saved_and_sane(real_summary):
+    rv = real_summary["reviews"]                      # D-023: Mantel-Haenszel over review timing x customer state
+    lo, hi = rv["mh_or_ci"]
+    assert rv["strata_used"] > 3 and rv["strata_used"] <= rv["strata_total"]
+    assert lo <= rv["mh_or"] <= hi and rv["mh_or"] > 1.0
+    assert rv["mh_or"] < rv["crude_or"]               # adjusting for survey timing must shrink the crude OR (L-009)
+    assert rv["mann_whitney"]["r_biserial"] < 0       # D-027: late orders score lower
+
+
+@pytest.mark.real
+def test_e4_saved_outputs_match_the_database(real_env, real_summary, out_dir):
+    """Guards against stale outputs/: JSON and CSV must describe the same run as the database."""
+    db_kpi = q(real_env, "SELECT delivered_valid_orders, late_orders FROM out_kpi_overall").iloc[0]
+    csv_kpi = pd.read_csv(out_dir / "out_kpi_overall.csv").iloc[0]
+    js = real_summary["kpi"]
+    assert (int(db_kpi.delivered_valid_orders), int(db_kpi.late_orders)) == \
+           (int(csv_kpi.delivered_valid_orders), int(csv_kpi.late_orders)) == \
+           (js["delivered_valid_orders"], js["late_orders"])
+    assert all(r["est_1star_low"] <= r["est_1star_high"] for r in real_summary["simulator"])

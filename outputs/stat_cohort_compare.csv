@@ -1,0 +1,4 @@
+k,acquired_active,acquired_total,acquired_retention,non_funnel_active,non_funnel_total,non_funnel_retention,diff_pp,diff_ci_lo_pp,diff_ci_hi_pp
+1,123,197,0.6244,306,533,0.5741,5.03,-2.93,12.99
+2,132,197,0.6701,262,533,0.4916,17.85,10.03,25.67
+3,126,197,0.6396,264,533,0.4953,14.43,6.49,22.36

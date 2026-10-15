@@ -26,12 +26,12 @@ If you find a conflict, do not guess: log it in `docs/decision_log.md` and ask C
 `AGENTS.md` -> `docs/07_PROGRESS_REPORT.md` (find your work package) -> `docs/decision_log.md` -> `docs/05_AGENT_PLAYBOOK.md` -> the spec for your task (`03` for analysis, `04` for app) -> the SQL/Python you will touch.
 
 ## 5. Current state (as of the hand-over)
-- Phase A (audit, cleaning, star schema) and Phase B (KPIs, funnel, cohorts, statistics) are **written and tested on synthetic data only**. They have **not yet been run on the real CSVs in this repo**. That is Work Package 0.
-- Numbers in the progress report are **preliminary** until WP0 reproduces them. Never present them as final.
-- The code arrives as `olist_code_bundle.zip`; the owner extracts it into the project root. If `sql/` and `src/` are empty, stop and tell the owner.
+- Phase A (audit, cleaning, star schema) and the SQL half of Phase B (KPIs, funnel, cohorts, delivery, reviews) have **run on the real CSVs and reproduce the earlier numbers** (WP0, approved with fixes on 2026-10-11; see `docs/07_PROGRESS_REPORT.md` section 0). The statistics layer had defects; Work Package 0b (fixes + completion) was executed on 2026-10-11 and awaits Claude's review and the clean commit (D-028). The test suite was rewritten on 2026-10-14 (D-030); WP0b's own test changes are superseded by it.
+- Numbers are **preliminary** unless section 0 of the progress report lists them as reproduced, or they come from a saved file produced by the pipeline. Never quote a number from a throw-away command. The earlier values 4.38 (adjusted OR), 199 (simulator one-star) and 132/197 (cohort) are retired (D-023, D-024, D-025).
+- The code is in the repo (`sql/01-06`, `src/*.py`, `tests/`), committed locally. `olist_code_bundle.zip` is obsolete; ignore any mention of it.
 
 ## 6. How the pipeline works
-`python src/run_pipeline.py --raw data/raw --db <path>.sqlite --out outputs` loads the 10 analysed CSVs as TEXT into `raw_*` tables (geolocation is not loaded, D-014; the audit script still profiles it), runs `sql/01..06` in order (clean -> star schema -> KPIs -> funnel -> cohorts -> delivery/reviews), exports every `out_*` table to `outputs/*.csv`, writes `app_orders.csv.gz` and `app_funnel.csv`, then runs `src/analysis.py` (statistics -> `outputs/stat_*.csv`, `analysis_summary.json`). Tests: `pytest -q` (override paths with env vars `OLIST_RAW`, `OLIST_DB`, `OLIST_OUT`).
+`python src/run_pipeline.py --raw data/raw --db <path>.sqlite --out outputs` loads the 10 analysed CSVs as TEXT into `raw_*` tables (geolocation is not loaded, D-014; the audit script still profiles it), runs `sql/01..06` in order (clean -> star schema -> KPIs -> funnel -> cohorts -> delivery/reviews), exports every `out_*` table to `outputs/*.csv`, writes `app_orders.csv.gz` and `app_funnel.csv`, then runs `src/analysis.py` (statistics -> `outputs/stat_*.csv`, `analysis_summary.json`). Tests: run `pytest` from anywhere inside the project (`pytest.ini`, `tests/conftest.py`). Known-answer tests on a hand-built dataset always run; checks against the real database and `outputs/` are added automatically when `C:\work\olist.sqlite` and `outputs/` exist (override with env vars `OLIST_DB`, `OLIST_OUT`, `OLIST_RAW`). The header says which mode ran. Expected: 27 passed + 3 skipped on a clean clone (committed `outputs/`, no database); 38 passed, 0 skipped with the real database (D-030).
 
 ## 7. Key definitions you must not change without Claude's approval
 - **Window:** orders 2017-01-01 to 2018-08-31 (D-011); effective data end 2018-08-31 (D-013). Anything after is right-censored / masked.
@@ -42,6 +42,7 @@ If you find a conflict, do not guess: log it in `docs/decision_log.md` and ask C
 - **Seller-level KPIs** use single-seller orders only (D-018). **"Observed-selling rate"**, never "activation rate" (D-006). Funnel conversion uses matured cohorts / 90-day windows (D-007).
 - **Min-n:** origin 100, SDR deals 10, seller orders 10 (D-016). Small segments are flagged, not ranked.
 - **Fan-out trap:** a naive leads x deals x order_items join turns 8,000 leads into 12,664 rows. Always count DISTINCT keys at the right grain.
+- **Added 2026-10-11 (read the log entries):** adjusted OR = Mantel-Haenszel over review timing x customer state (D-023); simulator target and the 1-star range, never the crude-only figure (D-024); cohort activity counts any delivered order containing the seller's item (D-025); first sale within 90 days is timestamp-level and inclusive (D-026); Mann-Whitney r is negative when late orders score lower (D-027); test policy and repo hygiene (D-028, D-029).
 
 ## 8. Honesty rules (non-negotiable)
 1. Every number comes from a saved SQL file or script. No hand-typed results.
@@ -53,7 +54,7 @@ If you find a conflict, do not guess: log it in `docs/decision_log.md` and ask C
 7. Keep it simple. No new libraries, models or features beyond the specs.
 
 ## 9. Workflow and reporting
-Work on **one work package at a time** (listed in `docs/07_PROGRESS_REPORT.md` section 7). Finish with a report in the template of `docs/05_AGENT_PLAYBOOK.md`, with **real tables pasted** (not file names), then **stop and wait for Claude's verdict**. If blocked, say what is blocked and what you tried; do not work around the problem by relaxing a check.
+Work on **one work package at a time** (listed in `docs/07_PROGRESS_REPORT.md` section 7). Finish with a report in the template of `docs/05_AGENT_PLAYBOOK.md`, with **real tables pasted** (not file names), then **stop and wait for Claude's verdict**. If blocked, say what is blocked and what you tried; do not work around the problem by relaxing a check. **If a test fails, paste the full pytest output (not a summary) in your report. Never skip, loosen or delete a test to get a green run; fix the cause or log the issue.**
 
 ## 10. Known things not to be fooled by
 - "62% of delays happen at seller dispatch" is **not supported** (earlier run: dispatch about 13% of extra time, carrier transit about 87%). Do not reintroduce it.

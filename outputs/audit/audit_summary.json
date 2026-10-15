@@ -1,0 +1,42 @@
+{
+  "missing_files": [],
+  "cardinalities": {
+    "items_per_order_max": 21,
+    "items_per_order_mean": 1.142,
+    "orders_with_multiple_sellers": 1278,
+    "orders_with_multiple_payments": 2961,
+    "orders_with_multiple_reviews": 547,
+    "orders_without_items": 775,
+    "customers_distinct_customer_id": 99441,
+    "customers_distinct_customer_unique_id": 96096,
+    "deals_per_seller_max": 1,
+    "lead_table_columns": [
+      "mql_id",
+      "first_contact_date",
+      "landing_page_id",
+      "origin"
+    ],
+    "lead_table_has_sdr_column": false
+  },
+  "date_summary": {
+    "order_data_last_purchase": "2018-10-17 17:30:18",
+    "deals_total": 842,
+    "deals_won_after_last_order": 17,
+    "deals_with_>=90d_window": 746,
+    "deals_with_>=180d_window": 460,
+    "linked_deals": 380,
+    "linked_deals_first_order_BEFORE_won_date": 0,
+    "linked_deals_first_order_on_or_after_won_date": 380,
+    "linked_with_>=90d_window": 372,
+    "linked_with_>=180d_window": 238,
+    "gap_days_quantiles": {
+      "0.0": 3.0,
+      "0.1": 12.0,
+      "0.25": 22.0,
+      "0.5": 44.0,
+      "0.75": 72.0,
+      "0.9": 102.1,
+      "1.0": 220.0
+    }
+  }
+}

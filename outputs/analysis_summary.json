@@ -27,6 +27,41 @@
       "p_value": 6.2793161363990935e-24,
       "dof": 8,
       "cramers_v": 0.1276547712282535
+    },
+    "chi2_landing": {
+      "chi2": 156.5827491077776,
+      "p_value": 1.6428651621188855e-28,
+      "dof": 10,
+      "cramers_v": 0.18779346350228526
+    },
+    "chi2_downstream": {
+      "chi2": 9.670829009285084,
+      "p_value": 0.046353002797909895,
+      "dof": 4,
+      "cramers_v": 0.12570603877740458
+    },
+    "paid_vs_organic": {
+      "paid_rate": 0.5479,
+      "paid_matured": 146,
+      "paid_first_sale": 80,
+      "organic_rate": 0.3894,
+      "organic_matured": 208,
+      "organic_first_sale": 81,
+      "diff_pp": 15.85,
+      "diff_ci_lo_pp": 5.41,
+      "diff_ci_hi_pp": 26.29,
+      "is_exploratory": true
+    },
+    "days_to_close": {
+      "median": 14.0,
+      "share_within_30": 0.6591,
+      "share_within_90": 0.8219
+    },
+    "sdr": {
+      "total_sdrs": 32,
+      "sdrs_ge_10_deals": 15,
+      "top3_deals": 295,
+      "top3_share": 0.3504
     }
   },
   "reviews": {
@@ -52,17 +87,24 @@
     "mann_whitney": {
       "u_stat": 102901001.5,
       "p_value": 0.0,
-      "r_biserial": 0.6382,
+      "p_display": "<1e-300",
+      "r_biserial": -0.6382,
       "n_a": 6378,
       "n_b": 89182
     },
     "crude_or": 16.4609,
-    "mh_or": 16.4151,
-    "mh_n_strata": 3,
+    "mh_or": 4.1595,
+    "mh_or_ci": [
+      3.6985,
+      4.6599
+    ],
+    "strata_used": 47,
+    "strata_total": 54,
     "post_delivery_n_late": 1629,
     "post_delivery_n_ontime": 88961,
     "post_delivery_1star_late": 0.1872,
-    "post_delivery_1star_ontime": 0.0658
+    "post_delivery_1star_ontime": 0.0658,
+    "post_delivery_gap": 0.1214
   },
   "delivery": {
     "bad_months": [
@@ -88,63 +130,147 @@
     "dispatch_missed_late_rate": 0.269,
     "dispatch_met_late_rate": 0.0565,
     "dispatch_missed_risk_ratio": 4.7585,
-    "dispatch_missed_pct_of_late": 0.2229
+    "dispatch_missed_pct_of_late": 0.2229,
+    "top3_states_share_of_late": 0.5866,
+    "sp_rj_lane": {
+      "lane": "SP->RJ",
+      "orders": 8031,
+      "late_orders": 1147,
+      "late_rate": 0.1428,
+      "ci_lo": 0.1353,
+      "ci_hi": 0.1506
+    }
+  },
+  "seller": {
+    "seller_compare_2018": {
+      "n_acquired_sellers": 109,
+      "n_non_funnel_sellers": 783,
+      "metrics": {
+        "ontime_rate": {
+          "acquired_median": 0.973,
+          "non_funnel_median": 0.9322,
+          "rank_biserial_r": 0.3142,
+          "p_value": 8.618630905465734e-08
+        },
+        "avg_dispatch": {
+          "acquired_median": 1.8769,
+          "non_funnel_median": 2.4602,
+          "rank_biserial_r": -0.3079,
+          "p_value": 1.8526616391931196e-07
+        },
+        "avg_review": {
+          "acquired_median": 4.4211,
+          "non_funnel_median": 4.2143,
+          "rank_biserial_r": 0.2883,
+          "p_value": 1.0498071684695881e-06
+        }
+      }
+    },
+    "seller_concentration": {
+      "eligible_sellers_ge_20_orders": 787,
+      "worst_10_count": 79,
+      "worst_10_late_orders": 2993,
+      "worst_10_orders": 36364,
+      "worst_10_share_of_all_late": 0.4583,
+      "worst_10_share_of_pareto_late": 0.5256,
+      "worst_10_share_of_pareto_orders": 0.4372,
+      "worst_10_late_rate": 0.0823,
+      "rest_90_late_rate": 0.0577
+    }
   },
   "cohorts": {
     "monthly_retention_jan_may_2018": [
       {
         "k": 1,
         "grp": "acquired",
-        "active": 120,
-        "total": 195,
-        "retention": 0.6154,
-        "ci_lo": 0.5455,
-        "ci_hi": 0.6808
+        "active": 123,
+        "total": 197,
+        "retention": 0.6244,
+        "ci_lo": 0.555,
+        "ci_hi": 0.689
       },
       {
         "k": 1,
         "grp": "non_funnel",
-        "active": 302,
-        "total": 528,
-        "retention": 0.572,
-        "ci_lo": 0.5294,
-        "ci_hi": 0.6135
+        "active": 306,
+        "total": 533,
+        "retention": 0.5741,
+        "ci_lo": 0.5317,
+        "ci_hi": 0.6154
       },
       {
         "k": 2,
         "grp": "acquired",
-        "active": 128,
-        "total": 195,
-        "retention": 0.6564,
-        "ci_lo": 0.5873,
-        "ci_hi": 0.7195
+        "active": 132,
+        "total": 197,
+        "retention": 0.6701,
+        "ci_lo": 0.6017,
+        "ci_hi": 0.7319
       },
       {
         "k": 2,
         "grp": "non_funnel",
-        "active": 258,
-        "total": 528,
-        "retention": 0.4886,
-        "ci_lo": 0.4462,
-        "ci_hi": 0.5312
+        "active": 262,
+        "total": 533,
+        "retention": 0.4916,
+        "ci_lo": 0.4493,
+        "ci_hi": 0.5339
       },
       {
         "k": 3,
         "grp": "acquired",
-        "active": 125,
-        "total": 195,
-        "retention": 0.641,
-        "ci_lo": 0.5716,
-        "ci_hi": 0.705
+        "active": 126,
+        "total": 197,
+        "retention": 0.6396,
+        "ci_lo": 0.5705,
+        "ci_hi": 0.7034
       },
       {
         "k": 3,
         "grp": "non_funnel",
-        "active": 260,
-        "total": 528,
-        "retention": 0.4924,
-        "ci_lo": 0.45,
-        "ci_hi": 0.535
+        "active": 264,
+        "total": 533,
+        "retention": 0.4953,
+        "ci_lo": 0.453,
+        "ci_hi": 0.5376
+      }
+    ],
+    "cohort_compare": [
+      {
+        "k": 1,
+        "acquired_active": 123,
+        "acquired_total": 197,
+        "acquired_retention": 0.6244,
+        "non_funnel_active": 306,
+        "non_funnel_total": 533,
+        "non_funnel_retention": 0.5741,
+        "diff_pp": 5.03,
+        "diff_ci_lo_pp": -2.93,
+        "diff_ci_hi_pp": 12.99
+      },
+      {
+        "k": 2,
+        "acquired_active": 132,
+        "acquired_total": 197,
+        "acquired_retention": 0.6701,
+        "non_funnel_active": 262,
+        "non_funnel_total": 533,
+        "non_funnel_retention": 0.4916,
+        "diff_pp": 17.85,
+        "diff_ci_lo_pp": 10.03,
+        "diff_ci_hi_pp": 25.67
+      },
+      {
+        "k": 3,
+        "acquired_active": 126,
+        "acquired_total": 197,
+        "acquired_retention": 0.6396,
+        "non_funnel_active": 264,
+        "non_funnel_total": 533,
+        "non_funnel_retention": 0.4953,
+        "diff_pp": 14.43,
+        "diff_ci_lo_pp": 6.49,
+        "diff_ci_hi_pp": 22.36
       }
     ]
   },
@@ -156,7 +282,8 @@
       "median_dispatch": 2.561,
       "late_orders_avoided": 359,
       "share_of_all_late": 0.055,
-      "est_1star_avoided": 169
+      "est_1star_low": 44,
+      "est_1star_high": 169
     },
     {
       "pct_worst": 0.1,
@@ -165,7 +292,8 @@
       "median_dispatch": 2.561,
       "late_orders_avoided": 542,
       "share_of_all_late": 0.083,
-      "est_1star_avoided": 256
+      "est_1star_low": 66,
+      "est_1star_high": 256
     },
     {
       "pct_worst": 0.2,
@@ -174,7 +302,8 @@
       "median_dispatch": 2.561,
       "late_orders_avoided": 764,
       "share_of_all_late": 0.117,
-      "est_1star_avoided": 360
+      "est_1star_low": 93,
+      "est_1star_high": 360
     }
   ]
 }

@@ -1,0 +1,4 @@
+metric,acquired_median,non_funnel_median,mann_whitney_u,p_value,p_display,rank_biserial_r
+On-time rate,0.973,0.9322,56079.5,8.618630905465734e-08,8.6186e-08,0.3142
+Seller dispatch days,1.8769,2.4602,29534.0,1.8526616391931196e-07,1.8527e-07,-0.3079
+Review score,4.4211,4.2143,54977.0,1.0498071684695881e-06,1.0498e-06,0.2883

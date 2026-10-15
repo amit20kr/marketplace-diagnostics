@@ -2,7 +2,6 @@ data/raw/
 *.sqlite
 *.sqlite-journal
 db/
-outputs/audit/
 .env
 __pycache__/
 *.pyc

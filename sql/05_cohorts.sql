@@ -1,14 +1,15 @@
 -- 05_cohorts.sql: seller retention cohorts.
--- Cohort = month of a seller's first delivered single-seller order in the window (observed first sale, L-010).
+-- Cohort = month of a seller's first delivered order in the window (observed first sale, D-025, L-010).
 -- Retention at k = seller has >= 1 delivered order in month (cohort + k). Cells beyond the data end are flagged observable = 0.
 -- Group: acquired = seller in closed_deals; non_funnel = all other sellers (D-008).
 
 DROP TABLE IF EXISTS tmp_seller_month;
 CREATE TABLE tmp_seller_month AS
-SELECT DISTINCT seller_id, purchase_month AS month,
-       CAST(substr(purchase_month, 1, 4) AS INTEGER) * 12 + CAST(substr(purchase_month, 6, 2) AS INTEGER) AS mi
-FROM fact_orders
-WHERE in_window = 1 AND delivered_valid = 1 AND seller_id IS NOT NULL;
+SELECT DISTINCT i.seller_id, o.purchase_month AS month,
+       CAST(substr(o.purchase_month, 1, 4) AS INTEGER) * 12 + CAST(substr(o.purchase_month, 6, 2) AS INTEGER) AS mi
+FROM fact_order_items i
+JOIN fact_orders o ON o.order_id = i.order_id
+WHERE o.in_window = 1 AND o.delivered_valid = 1 AND i.seller_id IS NOT NULL;
 
 DROP TABLE IF EXISTS tmp_cohort;
 CREATE TABLE tmp_cohort AS

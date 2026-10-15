@@ -1,0 +1,15 @@
+stage,value
+1 all leads (rows),8000.0
+1b distinct mql_id in leads,8000.0
+2 closed deals (rows),842.0
+2b distinct mql_id in closed deals,842.0
+2c closed deals whose mql_id is in leads,842.0
+3 distinct closed-deal sellers,842.0
+4 ...present in sellers table,380.0
+5 ...present in order_items (any order status),380.0
+6 ...with >=1 delivered order,376.0
+7 ...with >=1 delivered order on/after won_date,376.0
+8 distinct delivered orders from deal sellers,4457.0
+8b item GMV (price) of those delivered orders,664858.0
+8c share of all delivered orders touched by deal sellers (%),4.62
+FAN-OUT: leads x deals x order_items naive join rows,12664.0
