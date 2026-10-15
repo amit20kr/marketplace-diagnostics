@@ -1,4 +1,4 @@
-"""app/Home.py - entry point for the Streamlit multi-page app (pages 1-4).
+"""app/Home.py - entry point for the Streamlit multi-page app (pages 1-5).
 
 Navigation via st.navigation. Global sidebar filters live in st.session_state.
 Reads ONLY outputs/ (via data.py).
@@ -30,6 +30,7 @@ pages = [
     st.Page("pages/2_Acquisition_Funnel.py", title="Acquisition Funnel", icon="🔭"),
     st.Page("pages/3_Seller_Cohorts.py", title="Seller Cohorts", icon="👥"),
     st.Page("pages/4_Delivery_Diagnostics.py", title="Delivery Diagnostics", icon="🚚"),
+    st.Page("pages/5_Data_Trust.py", title="Data Trust & Robustness", icon="🛡️"),
 ]
 pg = st.navigation(pages)
 

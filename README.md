@@ -4,9 +4,11 @@
 What drives delivery delays and customer dissatisfaction on Olist, and does acquiring sellers through the marketing funnel improve downstream marketplace performance?
 
 ## Key Findings (Associations in Observational Data)
-1. **Carrier transit drives delay:** ~87% of late orders' extra time is carrier transit (+19.91 d vs +3.04 d dispatch). Late deliveries concentrate by destination (RJ 12.1%, BA 12.2% vs SP 4.5%) and peak months (Nov 2017, Feb–Mar 2018), driven by a within-state rate effect (+10.68 pp), not order mix.
-2. **Seller dispatch is a secondary lever:** Missed shipping deadlines increase lateness risk (26.9% vs 5.65%, RR 4.76) and represent 22.3% of late orders. In simulation, shifting the worst 10% of sellers to median dispatch avoids 542 late orders (8.3% of all late).
+1. **Most of the extra delay time is carrier transit:** ~87% of late orders' extra time is carrier transit (+19.91 d vs +3.04 d dispatch). Late deliveries concentrate by destination (RJ 12.1%, BA 12.2% vs SP 4.5%) and peak months (Nov 2017, Feb–Mar 2018), driven by a within-state rate effect (+10.68 pp), not order mix.
+2. **Seller dispatch is a secondary lever:** Missed shipping deadlines are associated with higher lateness (26.9% vs 5.65%, RR 4.76) and represent 22.3% of late orders. In simulation, shifting the worst 10% of sellers to median dispatch avoids 542 late orders (8.3% of all late).
 3. **Survey timing inflates review gap:** The crude 1-star gap (53.8% late vs 6.6% on-time, 47.2 pp) drops to 12.1 pp (18.7% vs 6.6%) when restricted to reviews written after delivery. Adjusted odds ratio (timing × state) is 4.16 (95% CI 3.70–4.66).
+
+Full narrative and evidence: `docs/findings.md`; sensitivity analysis tables: `outputs/robustness_*.csv`.
 
 ## Recommendations
 1. **Prioritise carrier transit on slow lanes and peak periods:** Address high-delay lanes (e.g., SP→RJ at 14.3% late) and peak-month bottlenecks with logistics partners.
@@ -21,7 +23,7 @@ python src/run_pipeline.py --raw data/raw --db C:\work\olist.sqlite --out output
 # 2. Run test suite (synthetic + real data assertions)
 pytest
 
-# 3. Launch Streamlit app
+# 3. Launch 5-page Streamlit app
 streamlit run app/Home.py
 ```
 

@@ -1,6 +1,6 @@
 # Findings and Recommendations: Olist Seller Acquisition & Delivery Diagnostics
 
-**Status:** DRAFT v1, 2026-10-15 (Claude, WP2). Written from the saved pipeline outputs of commit `4292cbf` only (`outputs/analysis_summary.json` and `outputs/stat_*.csv`, `out_*.csv`). Every figure carries its source file. Robustness checks (WP1: bad-month threshold, timestamp-level lateness, date-level first sale, adjusted-OR strata, simulator min-n) are not yet in; the places they could change a statement are marked **[WP1]**.
+**Status:** v2, 2026-10-15 (Claude). Written from the saved pipeline outputs of commit `4292cbf` plus the WP1 robustness checks (`4e877f9`) (`outputs/analysis_summary.json` and `outputs/stat_*.csv`, `out_*.csv`). Every figure carries its source file. Robustness checks (WP1: bad-month threshold, timestamp-level lateness, date-level first sale, adjusted-OR strata, simulator min-n) are included below under **Robustness (WP1)**; none changed a conclusion, but two magnitudes are now quoted as ranges (post-delivery review gap, simulator opportunity).
 **Scope of the data:** Olist public sample, orders purchased 2017-01-01 to 2018-08-31 (D-011), 96,203 delivered-valid orders, R$13.18 M item GMV, plus the marketing funnel (8,000 leads, 842 closed deals). It is a sample: "not observed" never means "did not sell" (L-001).
 
 **How to read the claims.** All relationships below are *associations in observational data*. Nothing here is a causal estimate, and the simulator is an arithmetic scenario, not a forecast (honesty rule 3). There is no cost, margin or CAC data, so no recommendation is costed (L-004).
@@ -27,7 +27,7 @@
 - **Concentration by destination:** RJ 12.14% late (1,495 of 12,310 orders; CI 11.58 to 12.73) and BA 12.17% (396 of 3,253) vs SP 4.50% (1,817 of 40,399) and MG 4.59%. SP, RJ and MG together hold 58.7% of all late orders; SP and RJ alone 50.7%. `stat_late_state.csv`.
 - **Worst lane:** SP to RJ, 14.28% late (1,147 of 8,031 orders; CI 13.53 to 15.06), 17.6% of all late orders on 8.3% of orders (arithmetic on the lane row), against 4.71% for SP to SP. `stat_late_lane.csv`.
 - **What it means:** the largest lever is the carrier leg to specific destinations and the peak-season capacity of that leg. The earlier idea "62% of delays happen at seller dispatch" is not supported (R-001, H2).
-- **Caveats:** the data shows where delay appears, not why (no carrier id, no weather or strike data). Peak months coincide with Black Friday / Carnival season, which is context, not something this data tests. **[WP1]** will show how the bad-month list moves at 8% and 12% (D-017 chose 10% after seeing the series) and the timestamp-level late rate (8.13%, `out_late_sensitivity.csv`).
+- **Caveats:** the data shows where delay appears, not why (no carrier id, no weather or strike data). Peak months coincide with Black Friday / Carnival season, which is context, not something this data tests. **Robustness (WP1):** the same three months qualify at 8%, 10% and 12% (the next-worst month is 7.4%), so the 10% choice (D-017) does not drive the result, and the mix and rate effects are identical across thresholds (`robustness_bad_month.csv`). The timestamp-level late rate is 8.13% (7,822 orders) (`robustness_lateness_def.csv`).
 
 ### F2. Seller dispatch is a real but secondary lever
 - **Dispatch compliance:** 94.3% of orders were handed to the carrier by the shipping limit date. For the 5,412 that missed it, the late rate is 26.9% vs 5.65% for the 89,517 that met it: risk ratio 4.76, and missed-dispatch orders are 22.3% of all late orders. `analysis_summary.json` `delivery`.
@@ -42,7 +42,7 @@
 
   The one-star range runs from flipped orders x the post-delivery gap (12.14 pp) up to flipped orders x the crude gap (47.16 pp); the crude figure is an upper bound because many reviews predate delivery (L-009). `stat_simulator.csv`.
 - **What it means:** a seller scorecard and a dispatch target aimed at the sellers who miss the shipping limit date would remove roughly 6 to 12% of late orders (scenario, not forecast). It does not fix F1.
-- **Caveats:** association-based; assumes the dispatch time of the worst sellers could actually move to the median without side effects. **[WP1]** will show sensitivity to the eligibility threshold (min orders).
+- **Caveats:** association-based; assumes the dispatch time of the worst sellers could actually move to the median without side effects. **Robustness (WP1):** with the worst 10% fixed, late orders avoided are 607 / 542 / 404 (9.3% / 8.3% / 6.2% of all late) for a minimum of 20 / 30 / 50 orders, so quote the opportunity as a 6 to 9% scenario range (`robustness_simulator.csv`).
 
 ### F3. Late delivery is associated with bad reviews, and survey timing inflates the crude gap
 - **By delay band:** share of 1-star reviews 6.60% on time (n = 89,182), 25.12% for 1-3 days late (n = 1,851), 58.58% for 4-7 days (n = 1,748), 69.81% for 8+ days (n = 2,779). Mean score 4.29 / 3.29 / 2.10 / 1.70. `stat_review_band.csv`.
@@ -50,7 +50,7 @@
 - **Survey timing (L-009):** most late orders' reviews were written before the delivery date. Using only reviews written after delivery: 1-star 18.72% (n = 1,629 late) vs 6.58% (n = 88,961 on time), a gap of **12.14 pp**, one quarter of the crude gap.
 - **Adjusted:** Mantel-Haenszel odds ratio over review timing x customer state: 4.16 (bootstrap 95% CI 3.70 to 4.66, 47 of 54 strata used) vs crude 16.46 (D-023). The earlier 4.38 is retired.
 - **What it means:** being late is associated with markedly worse reviews even after allowing for timing and state, but the headline "late orders get 54% one-star" should always be shown beside the 12.1 pp post-delivery gap.
-- **Caveats:** reviews of undelivered or wrong-item orders are also in the 1-star pool (L-006); the review is voluntary. **[WP1]** adds the timestamp-level lateness variant.
+- **Caveats:** reviews of undelivered or wrong-item orders are also in the 1-star pool (L-006); the review is voluntary. **Robustness (WP1):** with timestamp-level lateness (7,822 late orders) the crude gap is 39.63 pp, the post-delivery gap **7.65 pp** and the dispatch risk ratio 4.54, so quote the post-delivery gap as **7.7 to 12.1 pp**. Date level is preferred because the estimated date has no time of day, so same-day deliveries count as late at timestamp level (D-012). The adjusted odds ratio is 4.23 (timing only), 15.93 (state only) and 4.16 (timing x state): review timing is the confounder that matters (`robustness_or_strata.csv`).
 
 ### F4. Sellers acquired through the funnel look better, with a selection caveat
 - **Funnel:** 8,000 leads, 842 closed deals = 10.52% (CI 9.87 to 11.22). Median 14 days to close; 65.9% within 30 days; 82.2% within 90. `analysis_summary.json` `funnel`; `stat_days_to_close.csv`.
@@ -63,7 +63,7 @@
 - **Lead to deal by origin** (chi-square 128.3, 8 dof, Cramer's V 0.13): organic search 11.80% (271 of 2,296), paid search 12.30% (195 of 1,586), direct 11.22%, **social 5.56% (CI 4.45 to 6.91)**, **email 3.04% (CI 1.85 to 4.96)**, unknown 16.29%. By landing page, V = 0.19. `stat_funnel_origin.csv`, `stat_funnel_landing.csv`.
 - **Downstream (first sale within 90 days of the deal):** paid search 54.8% (80 of 146) vs organic 38.9% (81 of 208): +15.85 pp (CI 5.41 to 26.29). Across all origins the test gives chi-square 9.67, p = 0.046, which is **boundary-sensitive** (an earlier run with a two-deal difference gave p = 0.065, V-012). **Exploratory** (L-011: no multiple-comparison correction). `stat_downstream_origin.csv`.
 - **What it means:** paid search converts at least as well as organic and its deals were at least as likely to sell soon after, so the proposal "move SDR effort from paid to organic" is not supported (R-004). Social and email convert at about half the rate of search or less, with clear CI separation, but the numbers are small (75 and 15 deals).
-- **Caveats:** no cost or CAC data, so "converts better" says nothing about return on spend (L-004). Segment, lead type and SDR exist only for closed deals, so they cannot explain conversion (L-008). SDR table: 32 SDRs, 15 with at least 10 deals; the top 3 closed 295 of 842 deals (35.0%); lead-level SDR conversion is not computable. **[WP1]** adds the date-level first-sale variant for the p = 0.046 result.
+- **Caveats:** no cost or CAC data, so "converts better" says nothing about return on spend (L-004). Segment, lead type and SDR exist only for closed deals, so they cannot explain conversion (L-008). SDR table: 32 SDRs, 15 with at least 10 deals; the top 3 closed 295 of 842 deals (35.0%); lead-level SDR conversion is not computable. **Robustness (WP1):** at date level 290 deals (43.5%) have a first sale and the origin p-value is 0.0645, versus 0.0464 at timestamp level. The paid-minus-organic difference is +14.89 pp (CI 4.43 to 25.35) at date level versus +15.85 pp (CI 5.41 to 26.29): the omnibus p-value is fragile, the pairwise interval stays above zero under both definitions, and the comparison remains exploratory (`robustness_first_sale.csv`).
 
 ---
 
@@ -102,7 +102,7 @@ Each: Finding -> Evidence -> Opportunity (scenario) -> Trade-off -> KPI to monit
 - The 4.38 adjusted OR, the 62% dispatch share, 575 late orders avoided and 199 one-star avoided are retired and appear nowhere in this document.
 
 ## 5. Open items before this goes final
-1. Fill in the **[WP1]** robustness tables; revise any statement whose conclusion moves.
+1. Done: the five WP1 checks are in and none changed a conclusion; the post-delivery gap (7.7 to 12.1 pp) and the simulator range (6 to 9%) are now quoted as ranges.
 2. Check that the app and README quote the same numbers (a test compares the app to `analysis_summary.json`).
 3. Verify the CC BY-NC-SA licence wording on Kaggle and credit Olist in the README.
 

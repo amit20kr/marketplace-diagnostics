@@ -27,3 +27,10 @@ def test_delivery_diagnostics_smoke():
     at = AppTest.from_file(str(APP_DIR / "pages" / "4_Delivery_Diagnostics.py"), default_timeout=30)
     at.run()
     assert not at.exception, f"Exceptions found: {at.exception}"
+
+
+def test_data_trust_smoke():
+    at = AppTest.from_file(str(APP_DIR / "pages" / "5_Data_Trust.py"), default_timeout=30)
+    at.run()
+    assert not at.exception, f"Exceptions found: {at.exception}"
+
