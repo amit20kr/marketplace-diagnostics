@@ -1,6 +1,6 @@
 pandas>=2.2
 numpy>=1.26
 scipy>=1.13
-plotly>=5.22
-streamlit>=1.37
+plotly==6.9.0
+streamlit==1.60.0
 pytest>=8.0
