@@ -85,6 +85,8 @@ Counts below about 30 are not interpretable. These are descriptive; no significa
 - closed_deals null rates: has_company 92.5%, has_gtin 92.4%, average_stock 92.2%, declared_product_catalog_size 91.8%, lead_behaviour_profile 21.0%, business_type 1.2%, lead_type 0.7%, business_segment 0.1%. The four sparse columns are unusable for analysis.
 
 ## 6. Ad hoc sanity signals (NOT analysis results; to be formally tested in Phase B)
+> **SUPERSEDED (D-011, D-012, F-000):** The ad hoc figures below are superseded by the pipeline SQL and statistics results (in-window late rate 6.79%, reviews 2.27 vs 4.29, 1-star 53.8% vs 6.6%; see docs/decision_log.md F-000 and docs/07_PROGRESS_REPORT.md).
+
 Using the latest review per delivered order: late orders (delivered after the estimated date) were about 8.1% of delivered orders with a delivery date; average review about 2.6 for late vs 4.3 for on-time orders; share of 1-star reviews about 46% vs 7%. About 66% of reviews written before the delivery date belong to late orders. These numbers only indicate H1 is plausible. Phase B must reproduce them in SQL with definitions, CIs, effect sizes and confounder checks.
 
 ## 7. Public-figure verification

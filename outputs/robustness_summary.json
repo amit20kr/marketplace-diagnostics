@@ -1,0 +1,22 @@
+{
+  "bad_month_threshold": {
+    "conclusion_changes": "no",
+    "justification": "The bad-month classification is perfectly stable across 8%, 10%, and 12% cutoffs because all three bad months exceed 13.7% while all other months remain below 7.4%, leaving the shift-share decomposition identical with within-state rate surges explaining over 99% of the late-order increase."
+  },
+  "lateness_definition": {
+    "conclusion_changes": "no",
+    "justification": "Switching to timestamp-level lateness classifies same-day deliveries as late and raises the overall late rate from 6.79% to 8.13%, with dispatch compliance risk ratio remaining elevated at 4.54x vs 4.76x and the 1-star penalty remaining substantial (post-delivery 7.65 pp vs 12.14 pp, crude 39.63 pp vs 47.17 pp)."
+  },
+  "or_strata_sets": {
+    "conclusion_changes": "no",
+    "justification": "Survey timing (pre vs post delivery) is the primary confounder reducing the odds ratio from ~15.9 to ~4.2, while customer state stratification adds precision without altering the effect size (OR 4.16 vs 4.23)."
+  },
+  "simulator_min_orders": {
+    "conclusion_changes": "no",
+    "justification": "Across eligibility cutoffs from 20 to 50 orders, fixing the worst 10% of sellers consistently avoids 6.2% to 9.3% of late orders (404 to 607 orders) and 49-74 to 191-286 1-star reviews, confirming scenario stability."
+  },
+  "first_sale_date_level": {
+    "conclusion_changes": "no",
+    "justification": "Switching from timestamp to date-level moves downstream origin chi-square p from 0.0464 to 0.0645 based on two additional organic deals, reinforcing V-012 and L-011 that channel downstream conversion differences are fragile and strictly exploratory."
+  }
+}

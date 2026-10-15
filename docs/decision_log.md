@@ -74,7 +74,7 @@ Last updated: 2026-10-14 (test suite v2: D-030, D-031, V-012; WP0b outputs spot-
 - R-001 | Pre-baked results from earlier planning notes ("62% at dispatch", "p < 0.001") are not used as inputs; they were tested (see H1, H2).
 - R-002 | Seller take-rate analysis (no data); regional-hub or freight-subsidy costing (no cost data); repeat-purchase analysis (about 3.4% fewer distinct people than customer_ids; thin).
 - R-003 | Power BI, ML, LLM features.
-- R-004 | "Reallocate SDR capacity from paid to organic" is not supported: paid search converts at least as well as organic (12.3% vs 11.8%) and its sellers were more likely to make a first sale within 90 days (54.8% vs 39.9%, exploratory).
+- R-004 | "Reallocate SDR capacity from paid to organic" is not supported: paid search converts at least as well as organic (12.3% vs 11.8%) and its sellers were more likely to make a first sale within 90 days (54.8% vs 38.9%, +15.85 pp, CI 5.41 to 26.29, exploratory; the earlier run gave 39.9%, V-012).
 - R-005 | "Freight subsidy to improve satisfaction" has no support: late rate and review score barely vary across freight-to-price bands (late 6.6-7.2%; review 4.21 -> 4.11).
 - R-006 | Searching over stratification choices until the result matches an earlier number (done in WP0 while chasing 4.38). Definitions are fixed first (D-023) and the result is reported as found.
 

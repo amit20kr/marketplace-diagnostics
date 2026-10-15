@@ -1,11 +1,27 @@
 # 07. Progress Report and Remaining Work
-**Project:** Olist Seller Acquisition & Delivery Diagnostics | **Date:** 2026-10-14 (updated after the test-suite repair; WP0 review 2026-10-11; first written 2026-10-10) | **Folder:** `C:\Users\amit0\OneDrive\Desktop\EcommerceRCA`
+**Project:** Olist Seller Acquisition & Delivery Diagnostics | **Date:** 2026-10-15 (updated after the WP0b/WP0c verdict; 2026-10-14 test-suite repair; WP0 review 2026-10-11; first written 2026-10-10) | **Folder:** `C:\Users\amit0\OneDrive\Desktop\EcommerceRCA`
 **Read order for Antigravity:** this file -> `docs/decision_log.md` -> `docs/03_KPI_AND_ANALYSIS_SPEC.md` -> `docs/04_STREAMLIT_SPEC.md` -> `docs/05_AGENT_PLAYBOOK.md`.
 **Superseded:** `06_PHASE_A_HANDOFF.md` (written for DuckDB and a Phase A that is now built). Do not use it.
 
 ---
 
-## 0a. Status update 2026-10-14 (Claude): tests repaired, WP0b state, plan
+## 0b. Status update 2026-10-15 (Claude): formal verdict on WP0b and WP0c = APPROVE
+
+**Evidence (AG's WP0c report, real machine, Python 3.12.9, pytest 9.1.1, pandas 2.2.3, numpy 2.0.2, scipy 1.17.1):**
+- `pytest` = **38 passed, 0 skipped, 12 on real data**; header `SYNTHETIC + REAL`. Also as predicted: clean clone 27 passed + 3 skipped; nothing present 26 + 4; works from another folder.
+- Full pipeline rebuild from the raw CSVs reproduces every `outputs/` file with **0 differences** (the run is deterministic).
+- `sql/01-04` and `sql/06` unchanged (diff empty). Commit **4292cbf** "Phase A+B: pipeline, analysis, tests (verified on real data)" on top of 25d65b2 and c1f77b9. No git remote yet (WP5 needs one).
+- Steps 1-3 of the plan in 0a are therefore done. The original "failed again" run was never seen; every failure mode I could identify is fixed and the suite is green on the machine where it failed.
+
+**Labelling corrections (AG called these "Identical"; they are close, not equal; no conclusion changes):** dispatch medians 1.88 d (acquired) vs 1.86 d earlier; per-state shift-share RJ/SP/MG +3.25/+1.78/+1.17 pp vs +3.18/+1.81/+1.14 earlier; worst-10% seller share of late orders 45.83% vs 45.9%; paid vs organic first sale +15.85 pp (CI 5.41 to 26.29) vs +14.9 earlier (organic 81/208 vs 83/208, V-012). Findings use the saved values only.
+
+**Still exploratory (L-011):** downstream first sale by origin, chi-square 9.67, p = 0.046 (earlier 0.065); paid vs organic. WP1 adds the date-level variant.
+
+**Next:** WP1 (Antigravity, prompt in section 9b) and WP2 (Claude, `docs/findings.md` + memo) now run in parallel.
+
+---
+
+## 0a. Status update 2026-10-14 (Claude): tests repaired, WP0b state, plan (steps 1-3 DONE, see 0b)
 
 **What was asked:** "the tests failed again; fix them and plan." No traceback reached me, and the project folder shows the last pytest run (2026-10-11 19:51) with no recorded failure, so I could not see the exact failing run. I rebuilt the suite's failure modes instead, fixed every one I found, and verified under pytest 9.1.1 (the version on your machine). I cannot run commands on your PC, so the run against your real database is still yours to do (step 1 below).
 
@@ -98,12 +114,12 @@ Simplest: `git add -A` then `git commit`. Check first that `git status` does not
 
 | Phase | Scope | State | Done |
 |---|---|---|---|
-| A | Audit, data model, KPIs | Built; audit and headline KPIs reproduced on the real data (WP0). Tests rewritten (D-030). Data-model docs pending (WP1); one clean commit pending (D-028). | ~95% |
-| B | Funnel, cohorts, RCA, reviews, simulator | SQL layer verified. Statistics layer built by WP0b (2026-10-11), awaiting Claude's formal review. Robustness (WP1) and findings (WP2) pending. | ~80% |
+| A | Audit, data model, KPIs | Built; headline KPIs reproduced (WP0). Tests v2 green on the real machine (38 passed, 12 on real data). Committed (4292cbf). Data-model docs pending (WP1). | ~97% |
+| B | Funnel, cohorts, RCA, reviews, simulator | SQL layer verified. Statistics layer APPROVED (WP0b/WP0c, 2026-10-15). Robustness (WP1) and findings (WP2) pending. | ~85% |
 | C | Streamlit app | Spec and empty folders only. App-ready data files are produced by the pipeline. | ~5% |
 | D | Tests, README, deploy, resume bullets | Pipeline test suite v2 done (D-030). README, app tests, deploy, resume bullets pending. | ~15% |
 
-**Overall: about 39%** (effort weights A 15%, B 25%, C 40%, D 20%; was 34% before WP0b and the test repair; WP0b counts at full value only once Claude has approved it). The judgment-heavy part, deciding what the data really supports, is mostly done. The remaining ~61% is mostly build and polish that Antigravity does well.
+**Overall: about 43% (2026-10-15, WP0b approved)**; the previous figure was about 39%: (effort weights A 15%, B 25%, C 40%, D 20%; was 34% before WP0b and the test repair; WP0b counts at full value only once Claude has approved it). The judgment-heavy part, deciding what the data really supports, is mostly done. The remaining ~61% is mostly build and polish that Antigravity does well.
 
 **Rough remaining effort (my estimate):** 6-9 hours of Antigravity agent time, about 6-7 sessions (WP0b is done). Your own time: about 40 minutes in total (paste 6-7 reports back to me, one GitHub + Streamlit Cloud login). The zip step is gone.
 

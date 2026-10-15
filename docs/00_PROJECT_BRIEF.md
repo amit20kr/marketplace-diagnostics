@@ -46,9 +46,9 @@ Out of scope on purpose: profitability, CAC/SDR cost, freight policy costing, ta
 | Step | Where delivered |
 |---|---|
 | 1 Real business data | Both Olist datasets |
-| 2 SQL & data model | `sql/` + DuckDB star schema (see 01_ARCHITECTURE) |
+| 2 SQL & data model | `sql/` + SQLite star schema (see 01_ARCHITECTURE) |
 | 3 KPI analysis | `sql/03_kpis.sql`, see 03_KPI_AND_ANALYSIS_SPEC |
 | 4 Segmentation & cohorts | funnel by origin/segment, seller retention cohorts |
 | 5 RCA | delay decomposition, concentration, review-by-delay-band, Mann-Whitney + effect size |
 | 6 Decisions | 3 recommendations + what-if simulator |
-| 7 Dashboard & story | 7-page Streamlit app (see 04_STREAMLIT_SPEC) |
+| 7 Dashboard & story | 7-page Streamlit app reading CSV/gzip data from outputs/ (see 04_STREAMLIT_SPEC) |

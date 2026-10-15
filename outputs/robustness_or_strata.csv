@@ -1,0 +1,4 @@
+strata_set,strata_cols,n_strata_valid,mh_or,ci_lo,ci_hi,is_baseline
+review_timing_only,review_pre_delivery,2,4.2337,3.7736,4.71,0
+customer_state_only,customer_state,27,15.9248,15.0515,16.8915,0
+timing_x_state,review_pre_delivery + customer_state,47,4.1595,3.6985,4.6599,1

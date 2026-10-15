@@ -1,5 +1,8 @@
 # 05. Agent Playbook (Claude <-> Antigravity)
 
+## Stack & Runtime
+SQLite (Python stdlib `sqlite3`) for SQL transformations; Streamlit app reads CSV / `.csv.gz` / JSON from `outputs/` only (D-001, D-015). No DuckDB and no parquet. The SQLite database is kept outside OneDrive (e.g. `C:\work\olist.sqlite`).
+
 ## Loop
 Claude plans ONE phase -> Antigravity executes -> Phase Report -> Claude verdict (APPROVE / REQUEST FIXES / REVISE PLAN) -> next phase. Antigravity never starts the next phase without a verdict.
 

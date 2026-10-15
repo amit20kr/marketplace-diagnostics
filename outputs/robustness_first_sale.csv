@@ -1,0 +1,3 @@
+definition,matured_deals,first_sale_deals,first_sale_rate,chi2_stat,chi2_p_value,chi2_dof,cramers_v,paid_matured,paid_first_sale,paid_rate,organic_matured,organic_first_sale,organic_rate,paid_vs_organic_diff_pp,diff_ci_lo_pp,diff_ci_hi_pp,is_baseline
+timestamp_level (baseline),667,288,0.4318,9.6708,0.0464,4,0.1257,146,80,0.5479,208,81,0.3894,15.85,5.41,26.29,1
+date_level,667,290,0.4348,8.8692,0.0645,4,0.1204,146,80,0.5479,208,83,0.399,14.89,4.43,25.35,0

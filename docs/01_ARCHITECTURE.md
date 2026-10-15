@@ -28,7 +28,7 @@ EcommerceRCA/
     stats.py                     Wilson CI, Mann-Whitney, bootstrap, chi-square, Mantel-Haenszel
     simulator.py                 what-if scenario logic
     robustness.py                (WP1)
-  outputs/                       CSV / CSV.GZ / JSON consumed by the app (committed except audit)
+  outputs/                       CSV / CSV.GZ / JSON consumed by the app (committed; includes outputs/audit/ per D-028)
   app/
     Home.py  data.py  ui.py
     pages/                       one file per page
