@@ -117,11 +117,12 @@ Simplest: `git add -A` then `git commit`. Check first that `git status` does not
 | A | Audit, data model, KPIs | Built; headline KPIs reproduced (WP0). Tests v2 green on the real machine (38 passed, 12 on real data). Committed (4292cbf). Data-model docs done (WP1). | 100% |
 | B | Funnel, cohorts, RCA, reviews, simulator | SQL layer verified. Statistics layer APPROVED (WP0b/WP0c, 2026-10-15). Robustness (WP1) and findings (WP2) DONE. | 100% |
 | C | Streamlit app | 6-page app (Home + pages 1–6) APPROVED (Action Plan, commit 7a46403). Screenshots in `screenshots/`. | 100% |
-| D | Tests, README, deploy, resume bullets | 54 tests (38 pipeline + 7 robustness + 6 smoke + 3 numbers), 19 on real data (D-029). README done. Deploy workflow specified in `docs/08_WP5_DEPLOY.md`. | ~90% |
+| D | Tests, README, deploy, resume bullets | 55 tests (38 pipeline + 7 robustness + 7 smoke + 3 numbers), 19 on real data (D-029). README done. WP5 Parts A–D complete (live at https://marketplace-diagnostics-amitkrxzyaidg5hhnexqhxbiu.streamlit.app/). | ~98% |
 
-**Overall: about 95% (2026-10-16)**; phases A–C at 100%, D at ~90% (WP5 pre-flight in progress, GitHub push and Streamlit Cloud deploy pending). Resume bullets provided by Claude in `docs/08_WP5_DEPLOY.md`.
+**Overall: about 98% (2026-10-16)**; phases A–C at 100%, D at ~98% (WP5 parts A–D complete; app deployed to Streamlit Community Cloud).
+**Live URL:** [https://marketplace-diagnostics-amitkrxzyaidg5hhnexqhxbiu.streamlit.app/](https://marketplace-diagnostics-amitkrxzyaidg5hhnexqhxbiu.streamlit.app/)
 
-**Remaining work:** WP5 Part A pre-flight (Antigravity), Part B GitHub push (owner), Part C Streamlit Cloud deploy (owner), Part D post-deploy verification (owner + Antigravity).
+**Remaining work:** WP6 resume bullets (Claude); optional Part F (Reviews & What-If simulator page).
 
 ---
 
@@ -328,13 +329,13 @@ Rules: precomputed `stat_*.csv` files are unfiltered. Where a page shows them, l
 4. Fresh-clone test: new folder, clone, install, run pipeline, run tests, launch the app.
 **Acceptance:** all tests pass; fresh clone works without edits.
 
-### WP5: Deploy (AG + YOU)
-GitHub repo (no raw data, no database; `outputs/app_*` and the `stat_*`/`kpi_*` files are committed); Streamlit Community Cloud pointing at `app/Home.py`; confirm the live URL loads and shows the same numbers as local. **You:** log in to GitHub and Streamlit Cloud once.
+### WP5: Deploy (AG + YOU) — DONE (2026-10-16)
+Parts A–D complete. Pushed to GitHub repo (`https://github.com/amit20kr/marketplace-diagnostics`) on `main` branch, deployed to Streamlit Community Cloud at `https://marketplace-diagnostics-amitkrxzyaidg5hhnexqhxbiu.streamlit.app/`. Pre-flight rehearsal passed, ERD linked, and live app confirmed.
 
 ### WP6: Resume bullets (CL)
 Three to five quantified bullets using only numbers verified in WP0 and quoted in `findings.md`.
 
-**Suggested order:** WP0 (done) -> WP0b -> (WP1 and WP2 in parallel) -> WP3a -> 3b -> 3c -> 3d -> WP4 -> WP5 -> WP6.
+**Suggested order:** WP0 (done) -> WP0b -> (WP1 and WP2 in parallel) -> WP3a -> 3b -> 3c -> 3d -> WP4 -> WP5 (done) -> WP6.
 
 ---
 

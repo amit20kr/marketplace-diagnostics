@@ -1,6 +1,6 @@
 # Olist Seller Acquisition & Delivery Diagnostics
 
-**Live App:** `LIVE_URL_PENDING`
+**Live App:** [https://marketplace-diagnostics-amitkrxzyaidg5hhnexqhxbiu.streamlit.app/](https://marketplace-diagnostics-amitkrxzyaidg5hhnexqhxbiu.streamlit.app/)
 
 ## Quick Start (no raw data needed)
 The interactive 6-page dashboard runs immediately from committed outputs without needing the raw dataset:
@@ -23,6 +23,11 @@ Full narrative and evidence: `docs/findings.md`; one-page summary for managers: 
 1. **Prioritise carrier transit on slow lanes and peak periods:** Address high-delay lanes (e.g., SP→RJ at 14.3% late) and peak-month bottlenecks with logistics partners.
 2. **Deploy seller dispatch scorecards:** Focus intervention on the 5.7% of orders missing the shipping limit date and top-volume late sellers.
 3. **Preserve funnel acquisition and test weak channels:** Acquired sellers show higher on-time rates (97.3% vs 93.2%) and month-2 retention (+17.9 pp). Paid search converts comparably to organic; evaluate social and email before adjusting spend.
+
+## Data Model
+Star schema architecture (`fact_orders`, `fact_order_items`, `fact_reviews`, `fact_seller_funnel`, `dim_*`) detailed in [docs/data_model.md](docs/data_model.md). Entity-Relationship Diagram:
+
+![Star Schema ERD](docs/erd.png)
 
 ## App Preview
 | Executive Summary (Page 1) | Action Plan (Page 6) |

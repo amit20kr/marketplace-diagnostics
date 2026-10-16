@@ -83,3 +83,4 @@ Last updated: 2026-10-14 (test suite v2: D-030, D-031, V-012; WP0b outputs spot-
 
 ## App / presentation decisions
 - D-032 | active | Streamlit 1.60: `use_container_width` replaced by `width="stretch"`. Applied in `app/pages/4_Delivery_Diagnostics.py` (7 occurrences). No analysis definition changed. | WP3 2026-10-16
+- D-033 | active | Deployed to Streamlit Community Cloud (main file `app/Home.py`, Python 3.12, repo `main` branch, live URL `https://marketplace-diagnostics-amitkrxzyaidg5hhnexqhxbiu.streamlit.app/`). | WP5 2026-10-16
