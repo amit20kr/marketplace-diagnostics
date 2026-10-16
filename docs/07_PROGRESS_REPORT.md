@@ -116,12 +116,12 @@ Simplest: `git add -A` then `git commit`. Check first that `git status` does not
 |---|---|---|---|
 | A | Audit, data model, KPIs | Built; headline KPIs reproduced (WP0). Tests v2 green on the real machine (38 passed, 12 on real data). Committed (4292cbf). Data-model docs done (WP1). | 100% |
 | B | Funnel, cohorts, RCA, reviews, simulator | SQL layer verified. Statistics layer APPROVED (WP0b/WP0c, 2026-10-15). Robustness (WP1) and findings (WP2) DONE. | 100% |
-| C | Streamlit app | 5-page app (Home + pages 1–5) APPROVED (WP3, 2026-10-16). Screenshots in `screenshots/`. Commit 83e99a8. | 100% |
-| D | Tests, README, deploy, resume bullets | 53 tests (38 pipeline + 7 robustness + 5 smoke + 3 numbers), 19 on real data (D-029). README done. App APPROVED. Pending: GitHub push + Streamlit Cloud deploy. | ~90% |
+| C | Streamlit app | 6-page app (Home + pages 1–6) APPROVED (Action Plan, commit 7a46403). Screenshots in `screenshots/`. | 100% |
+| D | Tests, README, deploy, resume bullets | 54 tests (38 pipeline + 7 robustness + 6 smoke + 3 numbers), 19 on real data (D-029). README done. Deploy workflow specified in `docs/08_WP5_DEPLOY.md`. | ~90% |
 
-**Overall: about 95% (2026-10-16, WP3 approved)**; phases A–C at 100%, D at ~90% (pending GitHub push and Streamlit Cloud deploy). Resume bullets provided by Claude.
+**Overall: about 95% (2026-10-16)**; phases A–C at 100%, D at ~90% (WP5 pre-flight in progress, GitHub push and Streamlit Cloud deploy pending). Resume bullets provided by Claude in `docs/08_WP5_DEPLOY.md`.
 
-**Rough remaining effort (my estimate):** 6-9 hours of Antigravity agent time, about 6-7 sessions (WP0b is done). Your own time: about 40 minutes in total (paste 6-7 reports back to me, one GitHub + Streamlit Cloud login). The zip step is gone.
+**Remaining work:** WP5 Part A pre-flight (Antigravity), Part B GitHub push (owner), Part C Streamlit Cloud deploy (owner), Part D post-deploy verification (owner + Antigravity).
 
 ---
 

@@ -1,4 +1,4 @@
-"""app/Home.py - entry point for the Streamlit multi-page app (pages 1-5).
+"""app/Home.py - entry point for the Streamlit multi-page app (pages 1-6).
 
 Navigation via st.navigation. Global sidebar filters live in st.session_state.
 Reads ONLY outputs/ (via data.py).

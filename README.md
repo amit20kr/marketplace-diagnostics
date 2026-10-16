@@ -1,5 +1,14 @@
 # Olist Seller Acquisition & Delivery Diagnostics
 
+**Live App:** `LIVE_URL_PENDING`
+
+## Quick Start (no raw data needed)
+The interactive 6-page dashboard runs immediately from committed outputs without needing the raw dataset:
+```bash
+pip install -r requirements.txt
+streamlit run app/Home.py
+```
+
 ## The Question
 What drives delivery delays and customer dissatisfaction on Olist, and does acquiring sellers through the marketing funnel improve downstream marketplace performance?
 
@@ -15,7 +24,15 @@ Full narrative and evidence: `docs/findings.md`; one-page summary for managers: 
 2. **Deploy seller dispatch scorecards:** Focus intervention on the 5.7% of orders missing the shipping limit date and top-volume late sellers.
 3. **Preserve funnel acquisition and test weak channels:** Acquired sellers show higher on-time rates (97.3% vs 93.2%) and month-2 retention (+17.9 pp). Paid search converts comparably to organic; evaluate social and email before adjusting spend.
 
-## How to Run
+## App Preview
+| Executive Summary (Page 1) | Action Plan (Page 6) |
+| :---: | :---: |
+| ![Executive Summary](screenshots/01_executive_summary.png) | ![Action Plan](screenshots/06_action_plan.png) |
+
+*(Full gallery of all 6 pages available in `screenshots/`: Executive Summary, Acquisition Funnel, Seller Cohorts, Delivery Diagnostics, Data Trust & Robustness, Action Plan).*
+
+## How to Run (Full Pipeline Rebuild)
+Rebuilding the entire analytics pipeline requires the Kaggle CSVs downloaded into `data/raw/`:
 ```bash
 # 1. Run full pipeline (builds SQLite DB outside OneDrive, executes SQL star schema, runs stats)
 python src/run_pipeline.py --raw data/raw --db C:\work\olist.sqlite --out outputs
@@ -35,6 +52,6 @@ streamlit run app/Home.py
 - **L-011:** Exploratory channel comparisons lack multiple-testing correction; no cost/CAC data.
 
 ## Attribution & License
-Dataset: [Olist Brazilian E-Commerce & Marketing Funnel](https://www.kaggle.com/datasets/olistbr/brazilian-ecommerce) via Kaggle.
-License: Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0).
-Non-commercial portfolio project.
+- **Code:** Licensed under the MIT License. See `LICENSE`.
+- **Data:** Derived data in `outputs/` comes from the [Olist Brazilian E-Commerce & Marketing Funnel](https://www.kaggle.com/datasets/olistbr/brazilian-ecommerce) datasets via Kaggle, licensed under Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0).
+- Non-commercial portfolio project. Attribution: Olist.

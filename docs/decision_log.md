@@ -82,4 +82,4 @@ Last updated: 2026-10-14 (test suite v2: D-030, D-031, V-012; WP0b outputs spot-
 - F-000 (old ad hoc signal: 8.1% late, reviews 2.6 vs 4.3, 1-star 46% vs 7%) used timestamp-level lateness, no window and a different review rule. The authoritative figures come from the pipeline (late 6.79% date-level in window; average review 2.27 vs 4.29; 1-star 53.8% vs 6.6%; earlier run).
 
 ## App / presentation decisions
-- D-031 | active | Streamlit 1.60: `use_container_width` replaced by `width="stretch"`. Applied in `app/pages/4_Delivery_Diagnostics.py` (7 occurrences). No analysis definition changed. | WP3 2026-10-16
+- D-032 | active | Streamlit 1.60: `use_container_width` replaced by `width="stretch"`. Applied in `app/pages/4_Delivery_Diagnostics.py` (7 occurrences). No analysis definition changed. | WP3 2026-10-16
