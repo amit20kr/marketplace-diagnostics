@@ -31,6 +31,7 @@ pages = [
     st.Page("pages/3_Seller_Cohorts.py", title="Seller Cohorts", icon="👥"),
     st.Page("pages/4_Delivery_Diagnostics.py", title="Delivery Diagnostics", icon="🚚"),
     st.Page("pages/5_Data_Trust.py", title="Data Trust & Robustness", icon="🛡️"),
+    st.Page("pages/6_Action_Plan.py", title="Action Plan", icon="🧭"),
 ]
 pg = st.navigation(pages)
 

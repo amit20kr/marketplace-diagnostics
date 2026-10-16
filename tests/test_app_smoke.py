@@ -34,3 +34,9 @@ def test_data_trust_smoke():
     at.run()
     assert not at.exception, f"Exceptions found: {at.exception}"
 
+
+def test_action_plan_smoke():
+    at = AppTest.from_file(str(APP_DIR / "pages" / "6_Action_Plan.py"), default_timeout=30)
+    at.run()
+    assert not at.exception, f"Exceptions found: {at.exception}"
+
